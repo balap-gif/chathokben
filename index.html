@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ariss Chat - Firebase Realtime</title>
+    <title>Hokben Chat</title>
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
@@ -103,6 +103,48 @@
             display: none;
         }
 
+        .login-container .setup-guide {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .login-container .setup-guide summary {
+            color: #888;
+            cursor: pointer;
+            font-size: 0.85rem;
+            padding: 5px;
+        }
+
+        .login-container .setup-guide .content {
+            color: #aaa;
+            font-size: 0.8rem;
+            margin-top: 10px;
+            line-height: 1.6;
+        }
+
+        .login-container .setup-guide .content code {
+            background: rgba(255,255,255,0.1);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: monospace;
+            color: #4caf50;
+            font-size: 0.75rem;
+        }
+
+        .login-container .setup-guide .content pre {
+            background: #0a0a0a;
+            padding: 10px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.7rem;
+            color: #aaa;
+            margin-top: 8px;
+            border: 1px solid #2a2a2a;
+        }
+
         /* ========== DASHBOARD ========== */
         .dashboard {
             display: none;
@@ -121,7 +163,7 @@
             background: #1a1a1a;
         }
 
-        /* Sidebar Kiri - Daftar Chat */
+        /* Sidebar */
         .sidebar {
             width: 320px;
             min-width: 320px;
@@ -309,17 +351,7 @@
             font-size: 0.7rem;
         }
 
-        .chat-item .chat-meta .badge {
-            background: #4285f4;
-            color: white;
-            border-radius: 50%;
-            padding: 2px 8px;
-            font-size: 0.7rem;
-            margin-top: 4px;
-            display: inline-block;
-        }
-
-        /* Main Chat Area */
+        /* Main Chat */
         .main-chat {
             flex: 1;
             display: flex;
@@ -383,7 +415,7 @@
             color: white;
         }
 
-        /* Messages Area */
+        /* Messages */
         .messages-area {
             flex: 1;
             overflow-y: auto;
@@ -491,7 +523,7 @@
             font-size: 0.9rem;
         }
 
-        /* Input Area */
+        /* Input */
         .chat-input-area {
             padding: 12px 20px;
             border-top: 1px solid #2a2a2a;
@@ -551,32 +583,7 @@
             cursor: not-allowed;
         }
 
-        /* Responsive */
-        @media (max-width: 768px) {
-            .sidebar {
-                width: 100%;
-                min-width: unset;
-                border-right: none;
-            }
-
-            .sidebar.hidden {
-                display: none;
-            }
-
-            .main-chat {
-                width: 100%;
-            }
-
-            .message-wrapper {
-                max-width: 85%;
-            }
-        }
-
-        .hidden {
-            display: none !important;
-        }
-
-        /* Logout confirmation */
+        /* Logout Confirmation */
         .logout-confirm {
             position: fixed;
             top: 0;
@@ -646,21 +653,21 @@
             background: #e55a5a;
         }
 
-        /* Loading */
         .loading {
             color: #888;
             text-align: center;
             padding: 20px;
         }
 
-        .status-online {
-            color: #4caf50;
-            font-size: 0.75rem;
-        }
-
-        .status-offline {
-            color: #888;
-            font-size: 0.75rem;
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                min-width: unset;
+                border-right: none;
+            }
+            .message-wrapper {
+                max-width: 85%;
+            }
         }
     </style>
 </head>
@@ -669,7 +676,7 @@
 <!-- ========== LOGIN PAGE ========== -->
 <div class="login-page" id="loginPage">
     <div class="login-container">
-        <h2>Hokben Chat</h2>
+        <h2>💬 Hokben Chat</h2>
         <p class="subtitle">Login dengan Gmail untuk melanjutkan</p>
         <button class="login-btn" id="loginBtn">
             <svg width="24" height="24" viewBox="0 0 24 24">
@@ -682,6 +689,37 @@
         </button>
         <div class="error-msg" id="loginError"></div>
         <div class="success-msg" id="loginSuccess"></div>
+
+        <!-- Panduan Setup Firebase -->
+        <details class="setup-guide" open>
+            <summary>⚙️ Panduan Setup Firebase (Klik untuk buka/tutup)</summary>
+            <div class="content">
+                <p><strong>📌 Langkah 1:</strong> Buat project di <a href="https://console.firebase.google.com" target="_blank" style="color:#4285f4;">Firebase Console</a></p>
+                <p><strong>📌 Langkah 2:</strong> Aktifkan <strong>Authentication</strong> → pilih <strong>Google</strong></p>
+                <p><strong>📌 Langkah 3:</strong> Buat <strong>Realtime Database</strong> dengan mode <strong>Test Mode</strong></p>
+                <p><strong>📌 Langkah 4:</strong> Ambil konfigurasi di <strong>Project Settings</strong> → <strong>Your apps</strong> → <strong>Config</strong></p>
+                <p><strong>📌 Langkah 5:</strong> Ganti <code>firebaseConfig</code> di bawah dengan data Anda:</p>
+                <pre>
+const firebaseConfig = {
+  apiKey: "AIzaSyCu4dfd27Xo-nu_HThNz-aN16q9gcBOJjo",
+  authDomain: "gogglechat-b5743.firebaseapp.com",
+  databaseURL: "https://gogglechat-b5743-default-rtdb.firebaseio.com",
+  projectId: "gogglechat-b5743",
+  storageBucket: "gogglechat-b5743.firebasestorage.app",
+  messagingSenderId: "205095602515",
+  appId: "1:205095602515:web:31e7d97708385eab1cf9a6",
+};</pre>
+                <p><strong>📌 Langkah 6:</strong> Atur Rules Database (Realtime Database → Rules):</p>
+                <pre>
+{
+  "rules": {
+    ".read": "auth != null",
+    ".write": "auth != null"
+  }
+}</pre>
+                <p style="margin-top:8px;color:#4caf50;">✅ Admin: <strong>haris789smb@gmail.com</strong> (bisa hapus pesan)</p>
+            </div>
+        </details>
     </div>
 </div>
 
@@ -700,15 +738,15 @@
 <!-- ========== DASHBOARD ========== -->
 <div class="dashboard" id="dashboard">
     <div class="dashboard-container">
-        <!-- Sidebar Kiri -->
+        <!-- Sidebar -->
         <div class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <div class="user-profile">
                     <div class="profile-info">
                         <div class="avatar" id="sidebarAvatar">A</div>
                         <div class="name-status">
-                            <span class="name" id="sidebarName">Ariss</span>
-                            <span class="status-online" id="statusIndicator">● Online</span>
+                            <span class="name" id="sidebarName">User</span>
+                            <span class="status" id="statusIndicator">● Online</span>
                         </div>
                     </div>
                     <span class="logout-icon" id="logoutIcon">⏻</span>
@@ -755,44 +793,49 @@
 </div>
 
 <script>
-    // ============================================================
-    //  FIREBASE CONFIGURATION - PROJECT BARU
-    //  Ini adalah konfigurasi Firebase project yang asli
-    // ============================================================
+    // ================================================================
+    //  ⚠️ ISI KONFIGURASI FIREBASE ANDA DI BAWAH INI ⚠️
+    //  Dapatkan dari: Firebase Console → Project Settings → Your apps
+    // ================================================================
     const firebaseConfig = {
-        apiKey: "AIzaSyCqQpY9wZ3xV5nR7tG2hJ4kL6mN8pQ1sT3uV5w",
-        authDomain: "ariss-chat-2026.firebaseapp.com",
-        databaseURL: "https://ariss-chat-2026-default-rtdb.firebaseio.com",
-        projectId: "ariss-chat-2026",
-        storageBucket: "ariss-chat-2026.appspot.com",
-        messagingSenderId: "987654321012",
-        appId: "1:987654321012:web:xyz789abc123def456"
+  apiKey: "AIzaSyCu4dfd27Xo-nu_HThNz-aN16q9gcBOJjo",
+  authDomain: "gogglechat-b5743.firebaseapp.com",
+  databaseURL: "https://gogglechat-b5743-default-rtdb.firebaseio.com",
+  projectId: "gogglechat-b5743",
+  storageBucket: "gogglechat-b5743.firebasestorage.app",
+  messagingSenderId: "205095602515",
+  appId: "1:205095602515:web:31e7d97708385eab1cf9a6",
     };
+
+    // ================================================================
+    //  JANGAN UBAH KODE DI BAWAH INI
+    // ================================================================
 
     // Inisialisasi Firebase
     try {
         firebase.initializeApp(firebaseConfig);
-        console.log('🔥 Firebase berhasil diinisialisasi');
+        console.log('✅ Firebase berhasil diinisialisasi');
     } catch (error) {
-        console.error('Error inisialisasi Firebase:', error);
-        alert('Gagal menginisialisasi Firebase. Silakan cek konfigurasi.');
+        console.error('❌ Error inisialisasi Firebase:', error);
+        document.getElementById('loginError').textContent = 
+            '⚠️ Konfigurasi Firebase belum diisi! Silakan isi firebaseConfig di script.';
+        document.getElementById('loginError').style.display = 'block';
     }
 
     const auth = firebase.auth();
     const database = firebase.database();
     const messagesRef = database.ref('messages');
 
-    // ============================================================
+    // ================================================================
     //  KONSTANTA
-    // ============================================================
-    const ADMIN_EMAIL = 'haris789mb@gmail.com';
+    // ================================================================
+    const ADMIN_EMAIL = 'haris789smb@gmail.com';
     let currentUser = null;
     let isAdmin = false;
     let allMessages = [];
     let currentChatId = 'oprasional';
     let chatList = [];
 
-    // Daftar chat default
     const defaultChats = [
         { id: 'bukti_depo', name: 'Bukti Depo', members: 8 },
         { id: 'bukti_wd', name: 'Bukti WD', members: 8 },
@@ -803,9 +846,9 @@
         { id: 'validasi', name: 'Validasi', members: 8 }
     ];
 
-    // ============================================================
+    // ================================================================
     //  DOM ELEMENTS
-    // ============================================================
+    // ================================================================
     const loginPage = document.getElementById('loginPage');
     const dashboard = document.getElementById('dashboard');
     const loginBtn = document.getElementById('loginBtn');
@@ -828,35 +871,30 @@
     const sendBtn = document.getElementById('sendBtn');
     const createGroupBtn = document.querySelector('.create-group-btn');
 
-    // ============================================================
+    // ================================================================
     //  AUTH STATE
-    // ============================================================
+    // ================================================================
     auth.onAuthStateChanged(user => {
         if (user) {
             currentUser = user;
             const email = user.email || '';
             isAdmin = (email.toLowerCase() === ADMIN_EMAIL.toLowerCase());
             
-            // Hide login, show dashboard
             loginPage.style.display = 'none';
             dashboard.style.display = 'block';
             
-            // Update sidebar
             const displayName = user.displayName || email.split('@')[0] || 'User';
             sidebarName.textContent = displayName;
             sidebarAvatar.textContent = displayName.charAt(0).toUpperCase();
             statusIndicator.textContent = '● Online';
-            statusIndicator.className = 'status-online';
+            statusIndicator.style.color = '#4caf50';
             
-            // Enable input
             messageInput.disabled = false;
             sendBtn.disabled = false;
             
-            // Load messages
             loadMessages();
             loadChatList();
             
-            // Show success message
             loginSuccess.textContent = '✅ Login berhasil!';
             loginSuccess.style.display = 'block';
             setTimeout(() => {
@@ -871,30 +909,24 @@
             sendBtn.disabled = true;
             messagesRef.off();
             
-            // Reset login messages
             loginError.style.display = 'none';
             loginSuccess.style.display = 'none';
         }
     });
 
-    // ============================================================
+    // ================================================================
     //  LOGIN / LOGOUT
-    // ============================================================
+    // ================================================================
     loginBtn.addEventListener('click', () => {
         loginError.style.display = 'none';
         loginSuccess.style.display = 'none';
         
         const provider = new firebase.auth.GoogleAuthProvider();
         provider.setCustomParameters({ prompt: 'select_account' });
-        auth.signInWithPopup(provider)
-            .then((result) => {
-                // Success handled by onAuthStateChanged
-            })
-            .catch((error) => {
-                console.error('Login error:', error);
-                loginError.textContent = 'Login gagal: ' + error.message;
-                loginError.style.display = 'block';
-            });
+        auth.signInWithPopup(provider).catch(error => {
+            loginError.textContent = 'Login gagal: ' + error.message;
+            loginError.style.display = 'block';
+        });
     });
 
     logoutIcon.addEventListener('click', () => {
@@ -907,39 +939,30 @@
 
     confirmLogout.addEventListener('click', () => {
         logoutConfirm.classList.remove('active');
-        auth.signOut().catch(err => {
-            console.error('Logout error:', err);
-        });
+        auth.signOut();
     });
 
-    // ============================================================
+    // ================================================================
     //  LOAD CHAT LIST
-    // ============================================================
+    // ================================================================
     function loadChatList() {
-        // Try to load from Firebase first
         const chatsRef = database.ref('chats');
         chatsRef.once('value')
             .then(snapshot => {
                 const data = snapshot.val();
                 if (data) {
-                    // Use chats from Firebase
                     chatList = Object.values(data);
                 } else {
-                    // Use default chats and save to Firebase
                     chatList = defaultChats;
-                    // Save default chats to Firebase
                     const updates = {};
                     defaultChats.forEach(chat => {
                         updates[chat.id] = chat;
                     });
-                    chatsRef.update(updates).catch(err => {
-                        console.error('Error saving chats:', err);
-                    });
+                    chatsRef.update(updates);
                 }
                 renderChatList();
             })
-            .catch(err => {
-                console.error('Error loading chats:', err);
+            .catch(() => {
                 chatList = defaultChats;
                 renderChatList();
             });
@@ -975,7 +998,6 @@
         });
         chatListEl.innerHTML = html;
 
-        // Click handler
         document.querySelectorAll('.chat-item').forEach(item => {
             item.addEventListener('click', function() {
                 const id = this.dataset.id;
@@ -1026,14 +1048,13 @@
         chatMembers.textContent = `${chat.members} anggota`;
     }
 
-    // Search
     searchChat.addEventListener('input', function() {
         renderChatList(this.value);
     });
 
-    // ============================================================
-    //  LOAD MESSAGES (Realtime)
-    // ============================================================
+    // ================================================================
+    //  LOAD MESSAGES
+    // ================================================================
     function loadMessages() {
         messagesRef.orderByChild('timestamp').on('value', snapshot => {
             const data = snapshot.val();
@@ -1053,14 +1074,13 @@
                 allMessages.sort((a, b) => a.timestamp - b.timestamp);
             }
             renderMessages();
-            // Update chat previews
             renderChatList(searchChat.value);
         });
     }
 
-    // ============================================================
+    // ================================================================
     //  RENDER MESSAGES
-    // ============================================================
+    // ================================================================
     function renderMessages() {
         const chatMessages = allMessages.filter(msg => msg.chatId === currentChatId);
         
@@ -1096,32 +1116,24 @@
 
         messagesArea.innerHTML = html;
 
-        // Delete handler
         if (isAdminUser) {
             document.querySelectorAll('.delete-btn').forEach(btn => {
                 btn.addEventListener('click', function(e) {
                     e.stopPropagation();
                     const key = this.dataset.key;
                     if (key && confirm('⚠️ Hapus pesan ini? (Tidak dapat dikembalikan)')) {
-                        messagesRef.child(key).remove()
-                            .then(() => {
-                                console.log('Pesan berhasil dihapus');
-                            })
-                            .catch(err => {
-                                alert('Gagal hapus: ' + err.message);
-                            });
+                        messagesRef.child(key).remove();
                     }
                 });
             });
         }
 
-        // Scroll to bottom
         messagesArea.scrollTop = messagesArea.scrollHeight;
     }
 
-    // ============================================================
+    // ================================================================
     //  SEND MESSAGE
-    // ============================================================
+    // ================================================================
     function sendMessage() {
         if (!currentUser) {
             alert('Silakan login terlebih dahulu.');
@@ -1156,9 +1168,9 @@
         }
     });
 
-    // ============================================================
+    // ================================================================
     //  CREATE GROUP
-    // ============================================================
+    // ================================================================
     createGroupBtn.addEventListener('click', () => {
         const groupName = prompt('Masukkan nama grup baru:');
         if (groupName && groupName.trim()) {
@@ -1168,13 +1180,11 @@
                 members: 1
             };
             
-            // Check if group already exists
             if (chatList.find(c => c.id === newGroup.id)) {
                 alert('Grup dengan nama tersebut sudah ada!');
                 return;
             }
             
-            // Save to Firebase
             const chatsRef = database.ref('chats');
             const updates = {};
             updates[newGroup.id] = newGroup;
@@ -1190,28 +1200,26 @@
         }
     });
 
-    // ============================================================
+    // ================================================================
     //  UTILITY
-    // ============================================================
+    // ================================================================
     function escapeHtml(text) {
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
     }
 
-    // ============================================================
+    // ================================================================
     //  INIT
-    // ============================================================
-    // Set default chat
+    // ================================================================
     const defaultChat = defaultChats.find(c => c.id === 'oprasional');
     if (defaultChat) {
         updateChatHeader(defaultChat);
     }
 
-    console.log('💬 Ariss Chat Dashboard');
-    console.log('👑 Admin:', ADMIN_EMAIL);
+    console.log('💬 Hokben Chat Dashboard');
+    console.log('👑 Admin:', haris789smb@gmail.com);
     console.log('🔒 Login dengan Gmail untuk mulai chatting');
-    console.log('📁 Firebase Project: ariss-chat-2026');
 </script>
 
 </body>
