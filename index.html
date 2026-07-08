@@ -82,11 +82,6 @@
             box-shadow: 0 8px 25px rgba(66, 133, 244, 0.3);
         }
 
-        .login-container .login-btn img {
-            width: 24px;
-            height: 24px;
-        }
-
         .login-container .error-msg {
             color: #ff6b6b;
             text-align: center;
@@ -696,20 +691,10 @@
             <div class="content">
                 <p><strong>📌 Langkah 1:</strong> Buat project di <a href="https://console.firebase.google.com" target="_blank" style="color:#4285f4;">Firebase Console</a></p>
                 <p><strong>📌 Langkah 2:</strong> Aktifkan <strong>Authentication</strong> → pilih <strong>Google</strong></p>
-                <p><strong>📌 Langkah 3:</strong> Buat <strong>Realtime Database</strong> dengan mode <strong>Test Mode</strong></p>
+                <p><strong>📌 Langkah 3:</strong> Buat <strong>Realtime Database</strong> (bukan Firestore!) dengan mode <strong>Test Mode</strong></p>
                 <p><strong>📌 Langkah 4:</strong> Ambil konfigurasi di <strong>Project Settings</strong> → <strong>Your apps</strong> → <strong>Config</strong></p>
-                <p><strong>📌 Langkah 5:</strong> Ganti <code>firebaseConfig</code> di bawah dengan data Anda:</p>
-                <pre>
-const firebaseConfig = {
-  apiKey: "AIzaSyCu4dfd27Xo-nu_HThNz-aN16q9gcBOJjo",
-  authDomain: "gogglechat-b5743.firebaseapp.com",
-  databaseURL: "https://gogglechat-b5743-default-rtdb.firebaseio.com",
-  projectId: "gogglechat-b5743",
-  storageBucket: "gogglechat-b5743.firebasestorage.app",
-  messagingSenderId: "205095602515",
-  appId: "1:205095602515:web:31e7d97708385eab1cf9a6",
-};</pre>
-                <p><strong>📌 Langkah 6:</strong> Atur Rules Database (Realtime Database → Rules):</p>
+                <p><strong>📌 Langkah 5:</strong> Ganti <code>firebaseConfig</code> di bawah dengan data Anda</p>
+                <p><strong>📌 Langkah 6:</strong> Atur Rules Database <strong>(Realtime Database → Rules)</strong>:</p>
                 <pre>
 {
   "rules": {
@@ -718,6 +703,7 @@ const firebaseConfig = {
   }
 }</pre>
                 <p style="margin-top:8px;color:#4caf50;">✅ Admin: <strong>haris789smb@gmail.com</strong> (bisa hapus pesan)</p>
+                <p style="color:#ff6b6b;margin-top:8px;">⚠️ <strong>PENTING:</strong> Gunakan <strong>Realtime Database</strong>, BUKAN Cloud Firestore!</p>
             </div>
         </details>
     </div>
@@ -794,31 +780,30 @@ const firebaseConfig = {
 
 <script>
     // ================================================================
-    //  ⚠️ ISI KONFIGURASI FIREBASE ANDA DI BAWAH INI ⚠️
-    //  Dapatkan dari: Firebase Console → Project Settings → Your apps
+    //  KONFIGURASI FIREBASE ANDA
     // ================================================================
     const firebaseConfig = {
-  apiKey: "AIzaSyCu4dfd27Xo-nu_HThNz-aN16q9gcBOJjo",
-  authDomain: "gogglechat-b5743.firebaseapp.com",
-  databaseURL: "https://gogglechat-b5743-default-rtdb.firebaseio.com",
-  projectId: "gogglechat-b5743",
-  storageBucket: "gogglechat-b5743.firebasestorage.app",
-  messagingSenderId: "205095602515",
-  appId: "1:205095602515:web:31e7d97708385eab1cf9a6",
+        apiKey: "AIzaSyCu4dfd27Xo-nu_HThNz-aN16q9gcBOJjo",
+        authDomain: "gogglechat-b5743.firebaseapp.com",
+        databaseURL: "https://gogglechat-b5743-default-rtdb.firebaseio.com",
+        projectId: "gogglechat-b5743",
+        storageBucket: "gogglechat-b5743.firebasestorage.app",
+        messagingSenderId: "205095602515",
+        appId: "1:205095602515:web:31e7d97708385eab1cf9a6"
     };
 
     // ================================================================
-    //  JANGAN UBAH KODE DI BAWAH INI
+    //  INISIALISASI FIREBASE
     // ================================================================
-
-    // Inisialisasi Firebase
     try {
         firebase.initializeApp(firebaseConfig);
         console.log('✅ Firebase berhasil diinisialisasi');
+        console.log('📁 Project:', firebaseConfig.projectId);
+        console.log('🗄️ Database:', firebaseConfig.databaseURL);
     } catch (error) {
         console.error('❌ Error inisialisasi Firebase:', error);
         document.getElementById('loginError').textContent = 
-            '⚠️ Konfigurasi Firebase belum diisi! Silakan isi firebaseConfig di script.';
+            '⚠️ Error: ' + error.message;
         document.getElementById('loginError').style.display = 'block';
     }
 
@@ -1220,7 +1205,26 @@ const firebaseConfig = {
     console.log('💬 Hokben Chat Dashboard');
     console.log('👑 Admin:', haris789smb@gmail.com);
     console.log('🔒 Login dengan Gmail untuk mulai chatting');
+    console.log('📁 Firebase Project:', firebaseConfig.projectId);
 </script>
 
 </body>
 </html>
+<script>
+document.addEventListener('contextmenu', e => e.preventDefault());
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'F12') e.preventDefault();
+    if (e.ctrlKey && e.shiftKey && ['I','J','C'].includes(e.key.toUpperCase())) e.preventDefault();
+    if (e.ctrlKey && e.key.toUpperCase() === 'U') e.preventDefault();
+});
+
+setInterval(() => {
+    const before = new Date();
+    debugger;
+    const after = new Date();
+    if (after - before > 100) {
+        document.body.innerHTML = '<h1 style="text-align:center;margin-top:50px;">Akses ditolak</h1>';
+    }
+}, 1000);
+</script>
