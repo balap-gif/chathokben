@@ -1,1230 +1,976 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hokben Chat</title>
-    <!-- Firebase SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        body {
-            background: #0a0a0a;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        /* ========== LOGIN PAGE ========== */
-        .login-page {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            width: 100%;
-            height: 100vh;
-            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
-        }
-
-        .login-container {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            padding: 50px 40px;
-            border-radius: 30px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            width: 100%;
-            max-width: 420px;
-            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
-        }
-
-        .login-container h2 {
-            color: white;
-            font-size: 2rem;
-            margin-bottom: 10px;
-            text-align: center;
-        }
-
-        .login-container .subtitle {
-            color: rgba(255,255,255,0.6);
-            text-align: center;
-            margin-bottom: 30px;
-            font-size: 0.95rem;
-        }
-
-        .login-container .login-btn {
-            width: 100%;
-            padding: 14px;
-            background: #4285f4;
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-size: 1.1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-        }
-
-        .login-container .login-btn:hover {
-            background: #357ae8;
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(66, 133, 244, 0.3);
-        }
-
-        .login-container .error-msg {
-            color: #ff6b6b;
-            text-align: center;
-            margin-top: 15px;
-            font-size: 0.9rem;
-            display: none;
-        }
-
-        .login-container .success-msg {
-            color: #4caf50;
-            text-align: center;
-            margin-top: 15px;
-            font-size: 0.9rem;
-            display: none;
-        }
-
-        .login-container .setup-guide {
-            margin-top: 20px;
-            padding: 15px;
-            background: rgba(255,255,255,0.05);
-            border-radius: 12px;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .login-container .setup-guide summary {
-            color: #888;
-            cursor: pointer;
-            font-size: 0.85rem;
-            padding: 5px;
-        }
-
-        .login-container .setup-guide .content {
-            color: #aaa;
-            font-size: 0.8rem;
-            margin-top: 10px;
-            line-height: 1.6;
-        }
-
-        .login-container .setup-guide .content code {
-            background: rgba(255,255,255,0.1);
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-family: monospace;
-            color: #4caf50;
-            font-size: 0.75rem;
-        }
-
-        .login-container .setup-guide .content pre {
-            background: #0a0a0a;
-            padding: 10px;
-            border-radius: 8px;
-            overflow-x: auto;
-            font-size: 0.7rem;
-            color: #aaa;
-            margin-top: 8px;
-            border: 1px solid #2a2a2a;
-        }
-
-        /* ========== DASHBOARD ========== */
-        .dashboard {
-            display: none;
-            width: 100%;
-            height: 100vh;
-            background: #0a0a0a;
-            position: relative;
-        }
-
-        .dashboard-container {
-            display: flex;
-            width: 100%;
-            height: 100%;
-            max-width: 1400px;
-            margin: 0 auto;
-            background: #1a1a1a;
-        }
-
-        /* Sidebar */
-        .sidebar {
-            width: 320px;
-            min-width: 320px;
-            background: #111111;
-            border-right: 1px solid #2a2a2a;
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-        }
-
-        .sidebar-header {
-            padding: 16px 20px;
-            border-bottom: 1px solid #2a2a2a;
-        }
-
-        .sidebar-header .user-profile {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .sidebar-header .user-profile .profile-info {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .sidebar-header .user-profile .avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: #4285f4;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 600;
-            font-size: 1.2rem;
-        }
-
-        .sidebar-header .user-profile .name-status {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .sidebar-header .user-profile .name-status .name {
-            color: white;
-            font-weight: 600;
-            font-size: 1rem;
-        }
-
-        .sidebar-header .user-profile .name-status .status {
-            color: #4caf50;
-            font-size: 0.75rem;
-        }
-
-        .sidebar-header .user-profile .logout-icon {
-            color: #888;
-            cursor: pointer;
-            font-size: 1.2rem;
-            transition: 0.2s;
-        }
-
-        .sidebar-header .user-profile .logout-icon:hover {
-            color: #ff6b6b;
-        }
-
-        .sidebar-search {
-            padding: 12px 20px;
-        }
-
-        .sidebar-search input {
-            width: 100%;
-            padding: 10px 16px;
-            border-radius: 30px;
-            border: none;
-            background: #2a2a2a;
-            color: white;
-            font-size: 0.9rem;
-            outline: none;
-        }
-
-        .sidebar-search input::placeholder {
-            color: #666;
-        }
-
-        .sidebar-search input:focus {
-            background: #333;
-        }
-
-        .create-group-btn {
-            padding: 8px 20px;
-            color: #4caf50;
-            font-weight: 600;
-            font-size: 0.85rem;
-            cursor: pointer;
-            border-bottom: 1px solid #2a2a2a;
-            padding-bottom: 12px;
-            margin: 0 20px 6px 20px;
-            transition: 0.2s;
-        }
-
-        .create-group-btn:hover {
-            color: #66bb6a;
-        }
-
-        .chat-list {
-            flex: 1;
-            overflow-y: auto;
-            padding: 0 4px;
-        }
-
-        .chat-list::-webkit-scrollbar {
-            width: 4px;
-        }
-
-        .chat-list::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        .chat-list::-webkit-scrollbar-thumb {
-            background: #333;
-            border-radius: 10px;
-        }
-
-        .chat-item {
-            display: flex;
-            align-items: center;
-            padding: 12px 16px;
-            cursor: pointer;
-            border-radius: 8px;
-            transition: 0.2s;
-            gap: 12px;
-            margin: 2px 8px;
-        }
-
-        .chat-item:hover {
-            background: #2a2a2a;
-        }
-
-        .chat-item.active {
-            background: #2a2a2a;
-        }
-
-        .chat-item .chat-avatar {
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            background: #333;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
-            font-size: 1rem;
-            color: white;
-            flex-shrink: 0;
-        }
-
-        .chat-item .chat-info {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .chat-item .chat-info .chat-name {
-            color: white;
-            font-weight: 500;
-            font-size: 0.95rem;
-        }
-
-        .chat-item .chat-info .chat-preview {
-            color: #888;
-            font-size: 0.8rem;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .chat-item .chat-meta {
-            text-align: right;
-            flex-shrink: 0;
-        }
-
-        .chat-item .chat-meta .time {
-            color: #666;
-            font-size: 0.7rem;
-        }
-
-        /* Main Chat */
-        .main-chat {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            background: #1a1a1a;
-            height: 100vh;
-        }
-
-        .chat-header {
-            padding: 12px 24px;
-            border-bottom: 1px solid #2a2a2a;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background: #1a1a1a;
-            min-height: 70px;
-        }
-
-        .chat-header .chat-title {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .chat-header .chat-title .avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: #333;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 600;
-        }
-
-        .chat-header .chat-title .name {
-            color: white;
-            font-weight: 600;
-            font-size: 1rem;
-        }
-
-        .chat-header .chat-title .members {
-            color: #888;
-            font-size: 0.75rem;
-        }
-
-        .chat-header .chat-actions {
-            color: #888;
-            font-size: 1.2rem;
-            display: flex;
-            gap: 16px;
-        }
-
-        .chat-header .chat-actions span {
-            cursor: pointer;
-            transition: 0.2s;
-        }
-
-        .chat-header .chat-actions span:hover {
-            color: white;
-        }
-
-        /* Messages */
-        .messages-area {
-            flex: 1;
-            overflow-y: auto;
-            padding: 16px 24px;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-
-        .messages-area::-webkit-scrollbar {
-            width: 4px;
-        }
-
-        .messages-area::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        .messages-area::-webkit-scrollbar-thumb {
-            background: #333;
-            border-radius: 10px;
-        }
-
-        .message-wrapper {
-            display: flex;
-            flex-direction: column;
-            max-width: 70%;
-        }
-
-        .message-wrapper.own {
-            align-self: flex-end;
-            align-items: flex-end;
-        }
-
-        .message-wrapper.other {
-            align-self: flex-start;
-            align-items: flex-start;
-        }
-
-        .message-bubble {
-            padding: 8px 14px;
-            border-radius: 16px;
-            background: #2a2a2a;
-            color: #e0e0e0;
-            font-size: 0.92rem;
-            word-wrap: break-word;
-            position: relative;
-        }
-
-        .message-wrapper.own .message-bubble {
-            background: #4285f4;
-            color: white;
-            border-bottom-right-radius: 4px;
-        }
-
-        .message-wrapper.other .message-bubble {
-            background: #2a2a2a;
-            border-bottom-left-radius: 4px;
-        }
-
-        .message-wrapper .message-sender {
-            color: #888;
-            font-size: 0.7rem;
-            margin-bottom: 2px;
-            padding-left: 4px;
-        }
-
-        .message-wrapper.own .message-sender {
-            padding-right: 4px;
-        }
-
-        .message-wrapper .message-time {
-            color: #666;
-            font-size: 0.6rem;
-            margin-top: 2px;
-            padding: 0 6px;
-        }
-
-        .message-wrapper.own .message-time {
-            padding-right: 6px;
-        }
-
-        .message-wrapper .delete-btn {
-            font-size: 0.6rem;
-            color: #666;
-            background: none;
-            border: none;
-            cursor: pointer;
-            padding: 0 6px;
-            margin-top: 2px;
-            transition: 0.2s;
-        }
-
-        .message-wrapper .delete-btn:hover {
-            color: #ff6b6b;
-        }
-
-        .message-wrapper.own .delete-btn {
-            align-self: flex-end;
-        }
-
-        .empty-messages {
-            color: #444;
-            text-align: center;
-            margin-top: 40px;
-            font-size: 0.9rem;
-        }
-
-        /* Input */
-        .chat-input-area {
-            padding: 12px 20px;
-            border-top: 1px solid #2a2a2a;
-            display: flex;
-            gap: 12px;
-            background: #1a1a1a;
-            align-items: center;
-        }
-
-        .chat-input-area .input-wrapper {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            background: #2a2a2a;
-            border-radius: 30px;
-            padding: 0 16px;
-        }
-
-        .chat-input-area .input-wrapper input {
-            flex: 1;
-            padding: 10px 0;
-            border: none;
-            background: transparent;
-            color: white;
-            font-size: 0.95rem;
-            outline: none;
-        }
-
-        .chat-input-area .input-wrapper input::placeholder {
-            color: #666;
-        }
-
-        .chat-input-area .input-wrapper .emoji-btn {
-            color: #666;
-            font-size: 1.2rem;
-            cursor: pointer;
-            padding: 6px;
-        }
-
-        .chat-input-area .send-btn {
-            padding: 10px 20px;
-            background: #4285f4;
-            color: white;
-            border: none;
-            border-radius: 30px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-
-        .chat-input-area .send-btn:hover {
-            background: #357ae8;
-        }
-
-        .chat-input-area .send-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        /* Logout Confirmation */
-        .logout-confirm {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.7);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 999;
-        }
-
-        .logout-confirm.active {
-            display: flex;
-        }
-
-        .logout-confirm .modal {
-            background: #1a1a1a;
-            padding: 30px;
-            border-radius: 20px;
-            max-width: 400px;
-            text-align: center;
-            border: 1px solid #2a2a2a;
-        }
-
-        .logout-confirm .modal h3 {
-            color: white;
-            margin-bottom: 10px;
-        }
-
-        .logout-confirm .modal p {
-            color: #888;
-            margin-bottom: 20px;
-        }
-
-        .logout-confirm .modal .btn-group {
-            display: flex;
-            gap: 12px;
-            justify-content: center;
-        }
-
-        .logout-confirm .modal .btn-group button {
-            padding: 10px 30px;
-            border: none;
-            border-radius: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-
-        .logout-confirm .modal .btn-group .cancel {
-            background: #2a2a2a;
-            color: white;
-        }
-
-        .logout-confirm .modal .btn-group .cancel:hover {
-            background: #333;
-        }
-
-        .logout-confirm .modal .btn-group .confirm {
-            background: #ff6b6b;
-            color: white;
-        }
-
-        .logout-confirm .modal .btn-group .confirm:hover {
-            background: #e55a5a;
-        }
-
-        .loading {
-            color: #888;
-            text-align: center;
-            padding: 20px;
-        }
-
-        @media (max-width: 768px) {
-            .sidebar {
-                width: 100%;
-                min-width: unset;
-                border-right: none;
-            }
-            .message-wrapper {
-                max-width: 85%;
-            }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OpsKeep — Dashboard Catatan Kerja Tim</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<style>
+:root{--bg:#0a0e17;--bg2:#111827;--glass:rgba(15,23,42,.65);--gb:rgba(255,255,255,.07);--text:#e2e8f0;--text2:#94a3b8;--muted:#475569;--cyan:#00e5ff;--green:#00ff88;--amber:#ffaa00;--red:#ff3366;--orange:#ff6b35;--pink:#f472b6;--r:14px;--rs:8px}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Space Grotesk',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 15% 85%,rgba(0,229,255,.04),transparent 55%),radial-gradient(ellipse at 85% 15%,rgba(0,255,136,.04),transparent 55%);z-index:0;pointer-events:none;animation:bgP 15s ease-in-out infinite alternate}
+@keyframes bgP{0%{opacity:.8}100%{opacity:1.2}}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--muted);border-radius:3px}
+.fd{font-family:'Orbitron',sans-serif}
+.glass{background:var(--glass);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid var(--gb);border-radius:var(--r)}
+.gs{background:var(--glass);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid var(--gb);border-radius:var(--rs)}
+.gc{box-shadow:0 0 20px rgba(0,229,255,.12),inset 0 0 20px rgba(0,229,255,.03)}
+.gg{box-shadow:0 0 20px rgba(0,255,136,.12),inset 0 0 20px rgba(0,255,136,.03)}
+.gr{box-shadow:0 0 20px rgba(255,51,102,.15),inset 0 0 20px rgba(255,51,102,.03)}
+.ga{box-shadow:0 0 20px rgba(255,170,0,.12),inset 0 0 20px rgba(255,170,0,.03)}
+.btn{padding:8px 18px;border-radius:var(--rs);font-family:inherit;font-weight:600;font-size:.85rem;cursor:pointer;border:none;transition:all .25s;display:inline-flex;align-items:center;gap:6px}
+.bp{background:linear-gradient(135deg,var(--cyan),#0090a8);color:#000}.bp:hover{box-shadow:0 0 25px rgba(0,229,255,.35);transform:translateY(-1px)}
+.bg{background:linear-gradient(135deg,var(--green),#00b860);color:#000}.bg:hover{box-shadow:0 0 25px rgba(0,255,136,.35);transform:translateY(-1px)}
+.br{background:linear-gradient(135deg,var(--red),#cc2952);color:#fff}.br:hover{box-shadow:0 0 25px rgba(255,51,102,.35)}
+.bgh{background:rgba(255,255,255,.05);color:var(--text2);border:1px solid var(--gb)}.bgh:hover{background:rgba(255,255,255,.1);color:var(--text)}
+.bs{padding:5px 12px;font-size:.78rem}
+.inp{background:rgba(255,255,255,.04);border:1px solid var(--gb);border-radius:var(--rs);padding:10px 14px;color:var(--text);font-family:inherit;font-size:.9rem;transition:all .25s;width:100%}
+.inp:focus{outline:none;border-color:var(--cyan);box-shadow:0 0 0 3px rgba(0,229,255,.1)}
+.inp::placeholder{color:var(--muted)}
+select.inp{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px}
+select.inp option{background:#1e293b;color:var(--text)}
+textarea.inp{resize:vertical;min-height:70px}
+label{font-size:.82rem;font-weight:500;color:var(--text2);display:block;margin-bottom:4px}
+.badge{padding:3px 10px;border-radius:20px;font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.b-rendah{background:rgba(0,255,136,.12);color:var(--green);border:1px solid rgba(0,255,136,.2)}
+.b-sedang{background:rgba(255,170,0,.12);color:var(--amber);border:1px solid rgba(255,170,0,.2)}
+.b-tinggi{background:rgba(255,107,53,.12);color:var(--orange);border:1px solid rgba(255,107,53,.2)}
+.b-darurat{background:rgba(255,51,102,.15);color:var(--red);border:1px solid rgba(255,51,102,.25);animation:pb 2s infinite}
+@keyframes pb{0%,100%{box-shadow:0 0 0 0 rgba(255,51,102,.3)}50%{box-shadow:0 0 0 6px rgba(255,51,102,0)}}
+.bs-badge{padding:3px 10px;border-radius:20px;font-size:.7rem;font-weight:600}
+.b-belum{background:rgba(148,163,184,.12);color:var(--text2);border:1px solid rgba(148,163,184,.2)}
+.b-proses{background:rgba(0,229,255,.1);color:var(--cyan);border:1px solid rgba(0,229,255,.2)}
+.b-selesai{background:rgba(0,255,136,.1);color:var(--green);border:1px solid rgba(0,255,136,.2)}
+.nc{transition:all .3s cubic-bezier(.4,0,.2,1);cursor:pointer;position:relative;overflow:hidden}
+.nc:hover{transform:translateY(-3px);box-shadow:0 8px 30px rgba(0,0,0,.3)}
+.nc.pinned{border-color:rgba(0,229,255,.2)}
+.nc.pinned::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--cyan),var(--green))}
+.nc .cb{position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:3px 0 0 3px}
+@keyframes sir{from{transform:translateX(120%);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes sor{from{transform:translateX(0);opacity:1}to{transform:translateX(120%);opacity:0}}
+@keyframes fi{from{opacity:0}to{opacity:1}}
+@keyframes fo{from{opacity:1}to{opacity:0}}
+@keyframes si{from{transform:scale(.9);opacity:0}to{transform:scale(1);opacity:1}}
+@keyframes cu{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes sh{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.toast{animation:sir .4s cubic-bezier(.4,0,.2,1);border-left:3px solid var(--cyan);pointer-events:auto}
+.toast.out{animation:sor .3s ease forwards}
+.mo{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);z-index:100;display:flex;align-items:center;justify-content:center;padding:16px;animation:fi .2s ease}
+.mo.cl{animation:fo .2s ease forwards}
+.mc{max-height:90vh;overflow-y:auto;animation:si .3s cubic-bezier(.4,0,.2,1)}
+.mo.cl .mc{animation:fo .2s ease forwards}
+.screen{min-height:100vh;display:flex;align-items:center;justify-content:center;position:relative;z-index:1}
+.sc{width:440px;max-width:95vw;padding:40px;text-align:center}
+.sc .val{font-size:1.8rem;font-family:'Orbitron',sans-serif;font-weight:900;line-height:1}
+.od{width:8px;height:8px;background:var(--green);border-radius:50%;display:inline-block;box-shadow:0 0 8px var(--green)}
+.mention{color:var(--cyan);font-weight:600;cursor:pointer}
+.ro{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;display:flex;align-items:center;justify-content:center;animation:fi .3s}
+.rb{animation:sh .5s,si .3s;max-width:400px;width:90vw}
+.ai{padding:10px 0;border-bottom:1px solid var(--gb)}.ai:last-child{border-bottom:none}
+.ci{padding:10px;border-radius:var(--rs);background:rgba(255,255,255,.03);border:1px solid var(--gb)}
+@media(max-width:1024px){.mg{grid-template-columns:1fr!important}.as{order:-1}}
+@media(max-width:640px){.sg{grid-template-columns:repeat(2,1fr)!important}.ng{grid-template-columns:1fr!important}.fb{flex-direction:column;align-items:stretch}.fb .inp{min-width:100%!important}.sc .val{font-size:1.3rem}.ni{flex-wrap:wrap;gap:8px}.sb{order:3;width:100%}}
+@media(prefers-reduced-motion:reduce){*{animation-duration:0s!important;transition-duration:0s!important}}
+</style>
 </head>
 <body>
 
-<!-- ========== LOGIN PAGE ========== -->
-<div class="login-page" id="loginPage">
-    <div class="login-container">
-        <h2>💬 Hokben Chat</h2>
-        <p class="subtitle">Login dengan Gmail untuk melanjutkan</p>
-        <button class="login-btn" id="loginBtn">
-            <svg width="24" height="24" viewBox="0 0 24 24">
-                <path fill="white" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/>
-                <path fill="white" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                <path fill="white" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                <path fill="white" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-            </svg>
-            Login dengan Gmail
-        </button>
-        <div class="error-msg" id="loginError"></div>
-        <div class="success-msg" id="loginSuccess"></div>
-
-        <!-- Panduan Setup Firebase -->
-        <details class="setup-guide" open>
-            <summary>⚙️ Panduan Setup Firebase (Klik untuk buka/tutup)</summary>
-            <div class="content">
-                <p><strong>📌 Langkah 1:</strong> Buat project di <a href="https://console.firebase.google.com" target="_blank" style="color:#4285f4;">Firebase Console</a></p>
-                <p><strong>📌 Langkah 2:</strong> Aktifkan <strong>Authentication</strong> → pilih <strong>Google</strong></p>
-                <p><strong>📌 Langkah 3:</strong> Buat <strong>Realtime Database</strong> (bukan Firestore!) dengan mode <strong>Test Mode</strong></p>
-                <p><strong>📌 Langkah 4:</strong> Ambil konfigurasi di <strong>Project Settings</strong> → <strong>Your apps</strong> → <strong>Config</strong></p>
-                <p><strong>📌 Langkah 5:</strong> Ganti <code>firebaseConfig</code> di bawah dengan data Anda</p>
-                <p><strong>📌 Langkah 6:</strong> Atur Rules Database <strong>(Realtime Database → Rules)</strong>:</p>
-                <pre>
-{
-  "rules": {
-    ".read": "auth != null",
-    ".write": "auth != null"
-  }
-}</pre>
-                <p style="margin-top:8px;color:#4caf50;">✅ Admin: <strong>haris789smb@gmail.com</strong> (bisa hapus pesan)</p>
-                <p style="color:#ff6b6b;margin-top:8px;">⚠️ <strong>PENTING:</strong> Gunakan <strong>Realtime Database</strong>, BUKAN Cloud Firestore!</p>
-            </div>
-        </details>
-    </div>
+<!-- ============ CONFIG ERROR ============ -->
+<div id="configErr" class="screen" style="display:none">
+<div class="sc glass gr" style="padding:40px">
+<i class="fas fa-exclamation-triangle" style="font-size:2.5rem;color:var(--red);margin-bottom:16px"></i>
+<h2 class="fd" style="font-size:1rem;color:var(--red);margin-bottom:12px">FIREBASE BELUM DIKONFIGURASI</h2>
+<p style="color:var(--text2);font-size:.85rem;line-height:1.6">Buka file HTML ini dan isi bagian <code style="background:rgba(255,255,255,.08);padding:2px 6px;border-radius:4px;font-size:.8rem">FIREBASE_CONFIG</code> dengan konfigurasi dari Firebase Console Anda.</p>
+<p style="color:var(--muted);font-size:.75rem;margin-top:16px">Ikuti panduan setup yang disertakan bersama kode ini.</p>
+</div>
 </div>
 
-<!-- ========== LOGOUT CONFIRMATION ========== -->
-<div class="logout-confirm" id="logoutConfirm">
-    <div class="modal">
-        <h3>🚪 Logout</h3>
-        <p>Apakah Anda yakin ingin keluar?</p>
-        <div class="btn-group">
-            <button class="cancel" id="cancelLogout">Batal</button>
-            <button class="confirm" id="confirmLogout">Logout</button>
-        </div>
-    </div>
+<!-- ============ SETUP AWAL (Admin Pertama) ============ -->
+<div id="setupScreen" class="screen" style="display:none">
+<div class="sc glass gc" style="padding:40px">
+<div class="fd" style="font-size:1.5rem;font-weight:900;color:var(--cyan);letter-spacing:2px;text-shadow:0 0 20px rgba(0,229,255,.4);margin-bottom:6px">OPSKEEP</div>
+<p style="color:var(--text2);font-size:.85rem;margin-bottom:24px">Setup Awal — Anda akan menjadi Admin pertama</p>
+<div style="text-align:left;margin-bottom:14px"><label>Gmail Anda</label><input id="setupEmail" type="email" class="inp" placeholder="nama@gmail.com" style="margin-top:4px"></div>
+<div style="text-align:left;margin-bottom:24px"><label>Nama Lengkap</label><input id="setupName" class="inp" placeholder="Masukkan nama Anda" style="margin-top:4px"></div>
+<button id="setupBtn" class="btn bp" style="width:100%;justify-content:center;padding:12px;font-size:.95rem"><i class="fas fa-rocket"></i> Buat Akun Admin</button>
+</div>
 </div>
 
-<!-- ========== DASHBOARD ========== -->
-<div class="dashboard" id="dashboard">
-    <div class="dashboard-container">
-        <!-- Sidebar -->
-        <div class="sidebar" id="sidebar">
-            <div class="sidebar-header">
-                <div class="user-profile">
-                    <div class="profile-info">
-                        <div class="avatar" id="sidebarAvatar">A</div>
-                        <div class="name-status">
-                            <span class="name" id="sidebarName">User</span>
-                            <span class="status" id="statusIndicator">● Online</span>
-                        </div>
-                    </div>
-                    <span class="logout-icon" id="logoutIcon">⏻</span>
-                </div>
-            </div>
-            <div class="sidebar-search">
-                <input type="text" id="searchChat" placeholder="Cari user atau grup...">
-            </div>
-            <div class="create-group-btn">+ Buat Grup Baru</div>
-            <div class="chat-list" id="chatList">
-                <div class="loading">Memuat chat...</div>
-            </div>
-        </div>
-
-        <!-- Main Chat -->
-        <div class="main-chat">
-            <div class="chat-header">
-                <div class="chat-title">
-                    <div class="avatar" id="chatAvatar">O</div>
-                    <div>
-                        <div class="name" id="chatName">OPRASIONAL HOKBEN</div>
-                        <div class="members" id="chatMembers">8 anggota</div>
-                    </div>
-                </div>
-                <div class="chat-actions">
-                    <span title="Search">🔍</span>
-                    <span title="More">⋮</span>
-                </div>
-            </div>
-
-            <div class="messages-area" id="messagesArea">
-                <div class="empty-messages">Pilih chat untuk mulai mengobrol</div>
-            </div>
-
-            <div class="chat-input-area">
-                <div class="input-wrapper">
-                    <input type="text" id="messageInput" placeholder="Ketik pesan..." disabled>
-                    <span class="emoji-btn">😊</span>
-                </div>
-                <button class="send-btn" id="sendBtn" disabled>Kirim</button>
-            </div>
-        </div>
-    </div>
+<!-- ============ LOGIN ============ -->
+<div id="loginScreen" class="screen" style="display:none">
+<div class="sc glass gc" style="padding:40px">
+<div class="fd" style="font-size:1.5rem;font-weight:900;color:var(--cyan);letter-spacing:2px;text-shadow:0 0 20px rgba(0,229,255,.4);margin-bottom:6px">OPSKEEP</div>
+<p style="color:var(--text2);font-size:.85rem;margin-bottom:24px">Masuk dengan Gmail yang sudah terdaftar</p>
+<div style="text-align:left;margin-bottom:24px"><label>Gmail Anda</label><input id="loginEmail" type="email" class="inp" placeholder="nama@gmail.com" style="margin-top:4px"></div>
+<button id="loginBtn" class="btn bp" style="width:100%;justify-content:center;padding:12px;font-size:.95rem"><i class="fas fa-sign-in-alt"></i> Masuk</button>
+<p id="loginErr" style="color:var(--red);font-size:.82rem;margin-top:12px;display:none"></p>
+<p style="color:var(--muted);font-size:.72rem;margin-top:16px">Gmail Anda harus sudah didaftarkan oleh Admin/Leader.</p>
 </div>
+</div>
+
+<!-- ============ MAIN APP ============ -->
+<div id="mainApp" style="display:none;position:relative;z-index:1">
+<nav class="glass" style="position:sticky;top:0;z-index:50;border-radius:0;border-left:0;border-right:0;border-top:0">
+<div class="ni" style="max-width:1440px;margin:0 auto;padding:10px 20px;display:flex;align-items:center;gap:16px">
+<div class="fd" style="font-size:1rem;font-weight:900;color:var(--cyan);letter-spacing:1.5px;white-space:nowrap;text-shadow:0 0 15px rgba(0,229,255,.3)">OPSKEEP</div>
+<div class="sb" style="flex:1;max-width:420px;position:relative">
+<i class="fas fa-search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:.82rem"></i>
+<input id="searchInput" class="inp" placeholder="Cari catatan..." style="padding-left:36px;font-size:.84rem">
+</div>
+<div style="margin-left:auto;display:flex;align-items:center;gap:10px">
+<span class="od"></span><span style="font-size:.75rem;color:var(--green)">Online</span>
+<button id="userMgrBtn" class="btn bgh bs" style="display:none" title="Kelola Pengguna"><i class="fas fa-users-cog"></i></button>
+<div style="position:relative">
+<button id="notifBtn" class="bgh btn" style="position:relative;padding:8px 10px" aria-label="Notifikasi">
+<i class="fas fa-bell" style="font-size:1rem"></i>
+<span id="notifBadge" style="display:none;position:absolute;top:-2px;right:-2px;background:var(--red);color:#fff;font-size:.65rem;font-weight:700;width:18px;height:18px;border-radius:50%;align-items:center;justify-content:center">0</span>
+</button>
+<div id="notifDD" style="display:none;position:absolute;right:0;top:110%;width:340px;max-height:400px;overflow-y:auto" class="glass gc"></div>
+</div>
+<div style="display:flex;align-items:center;gap:8px;padding:6px 12px;border-radius:var(--rs);background:rgba(255,255,255,.04)">
+<div id="uAvatar" style="width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;color:#000"></div>
+<div><div id="uName" style="font-size:.82rem;font-weight:600;line-height:1.2"></div><div id="uRole" style="font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px"></div></div>
+</div>
+<button id="logoutBtn" class="btn bgh bs" title="Keluar"><i class="fas fa-sign-out-alt"></i></button>
+</div>
+</div>
+</nav>
+
+<main style="max-width:1440px;margin:0 auto;padding:20px">
+<section id="statsSection" style="margin-bottom:20px"></section>
+<section class="glass" style="padding:14px 18px;margin-bottom:20px;display:flex;flex-wrap:wrap;align-items:center;gap:10px;border-radius:var(--r)">
+<div class="fb" style="flex:1;display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+<select id="fCat" class="inp" style="min-width:150px;padding:7px 30px 7px 10px;font-size:.82rem"><option value="">Semua Kategori</option></select>
+<select id="fPri" class="inp" style="min-width:130px;padding:7px 30px 7px 10px;font-size:.82rem"><option value="">Semua Prioritas</option><option value="rendah">Rendah</option><option value="sedang">Sedang</option><option value="tinggi">Tinggi</option><option value="darurat">Darurat</option></select>
+<select id="fStat" class="inp" style="min-width:150px;padding:7px 30px 7px 10px;font-size:.82rem"><option value="">Semua Status</option><option value="belum">Belum Dikerjakan</option><option value="proses">Sedang Dikerjakan</option><option value="selesai">Selesai</option></select>
+<select id="fDate" class="inp" style="min-width:130px;padding:7px 30px 7px 10px;font-size:.82rem"><option value="">Semua Waktu</option><option value="today">Hari Ini</option><option value="week">Minggu Ini</option><option value="month">Bulan Ini</option></select>
+</div>
+<button id="clearF" class="btn bgh bs"><i class="fas fa-times"></i> Reset</button>
+<button id="addBtn" class="btn bp"><i class="fas fa-plus"></i> Catatan Baru</button>
+</section>
+<div class="mg" style="display:grid;grid-template-columns:1fr 320px;gap:20px">
+<div><div id="notesGrid" class="ng" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px"></div><div id="emptyState" style="display:none;text-align:center;padding:60px 20px"><i class="fas fa-clipboard-list" style="font-size:3rem;color:var(--muted);margin-bottom:16px"></i><p style="color:var(--text2);font-size:1rem">Belum ada catatan</p><p style="color:var(--muted);font-size:.82rem;margin-top:4px">Klik "Catatan Baru" untuk memulai</p></div></div>
+<div class="as"><div class="glass" style="padding:16px;position:sticky;top:70px;max-height:calc(100vh - 90px);overflow-y:auto"><h3 style="font-size:.85rem;font-weight:700;color:var(--cyan);margin-bottom:12px;display:flex;align-items:center;gap:8px"><i class="fas fa-clock-rotate-left"></i> AKTIVITAS TERBARU</h3><div id="actList"></div></div></div>
+</div>
+</main>
+</div>
+
+<!-- ============ MODAL CATATAN ============ -->
+<div id="noteModal" class="mo" style="display:none">
+<div class="mc glass gc" style="width:600px;max-width:95vw;padding:28px">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+<h2 id="nModalTitle" class="fd" style="font-size:1rem;font-weight:700;color:var(--cyan)"></h2>
+<button onclick="closeNM()" class="bgh btn bs" aria-label="Tutup"><i class="fas fa-times"></i></button>
+</div>
+<form id="nForm" onsubmit="return false">
+<input type="hidden" id="nId">
+<div style="margin-bottom:14px"><label>Judul *</label><input id="nTitle" class="inp" placeholder="Judul catatan..." required></div>
+<div style="margin-bottom:14px"><label>Isi Catatan</label><textarea id="nContent" class="inp" placeholder="Tulis detail catatan..." rows="4"></textarea></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+<div><label>Kategori</label><select id="nCat" class="inp" style="margin-top:4px"></select></div>
+<div><label>Prioritas</label><select id="nPri" class="inp" style="margin-top:4px"><option value="rendah">Rendah</option><option value="sedang">Sedang</option><option value="tinggi">Tinggi</option><option value="darurat">Darurat</option></select></div>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+<div><label>Status</label><select id="nStat" class="inp" style="margin-top:4px"><option value="belum">Belum Dikerjakan</option><option value="proses">Sedang Dikerjakan</option><option value="selesai">Selesai</option></select></div>
+<div><label>Pin</label><select id="nPin" class="inp" style="margin-top:4px"><option value="false">Tidak</option><option value="true">Ya, Pin ke Atas</option></select></div>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+<div><label>Reminder Tanggal</label><input id="nRDate" type="date" class="inp" style="margin-top:4px"></div>
+<div><label>Reminder Jam</label><input id="nRTime" type="time" class="inp" style="margin-top:4px"></div>
+</div>
+<div style="margin-bottom:14px"><label>Ulangi Reminder</label><select id="nRRepeat" class="inp" style="margin-top:4px"><option value="none">Satu Kali</option><option value="daily">Setiap Hari</option></select></div>
+<div style="margin-bottom:14px"><label>Lampiran Gambar (maks 2MB)</label><input id="nAttach" type="file" accept="image/*" class="inp" style="margin-top:4px;padding:7px"></div>
+<div id="attPrev" style="margin-bottom:14px;display:none"><img id="attImg" style="max-width:100%;max-height:180px;border-radius:var(--rs);border:1px solid var(--gb)"><button type="button" onclick="removeAtt()" class="btn bgh bs" style="margin-top:6px"><i class="fas fa-trash"></i> Hapus</button></div>
+<div style="display:flex;gap:10px;justify-content:flex-end">
+<button type="button" onclick="closeNM()" class="btn bgh">Batal</button>
+<button type="button" id="saveBtn" class="btn bp"><i class="fas fa-save"></i> Simpan</button>
+</div>
+</form>
+</div>
+</div>
+
+<!-- ============ MODAL DETAIL ============ -->
+<div id="detailModal" class="mo" style="display:none">
+<div class="mc glass" style="width:700px;max-width:95vw;padding:0;overflow:hidden">
+<div id="detailContent"></div>
+</div>
+</div>
+
+<!-- ============ MODAL KELOLA USER ============ -->
+<div id="userModal" class="mo" style="display:none">
+<div class="mc glass gc" style="width:650px;max-width:95vw;padding:0;overflow:hidden">
+<div style="padding:20px 24px;border-bottom:1px solid var(--gb);display:flex;justify-content:space-between;align-items:center">
+<h2 class="fd" style="font-size:.95rem;font-weight:700;color:var(--cyan)"><i class="fas fa-users-cog" style="margin-right:8px"></i>KELOLA PENGGUNA</h2>
+<button onclick="closeUM()" class="bgh btn bs" aria-label="Tutup"><i class="fas fa-times"></i></button>
+</div>
+<div style="padding:20px 24px;border-bottom:1px solid var(--gb)">
+<h4 style="font-size:.82rem;font-weight:600;color:var(--text2);margin-bottom:10px">Tambah Pengguna Baru</h4>
+<div style="display:grid;grid-template-columns:1fr 1fr auto;gap:10px;align-items:end">
+<div><label>Gmail</label><input id="newUEmail" type="email" class="inp" placeholder="staff@gmail.com" style="margin-top:4px;font-size:.84rem"></div>
+<div><label>Nama Lengkap</label><input id="newUName" class="inp" placeholder="Nama lengkap" style="margin-top:4px;font-size:.84rem"></div>
+<div><label>Peran</label><select id="newURole" class="inp" style="margin-top:4px;font-size:.84rem"><option value="staff">Staff</option><option value="leader">Leader</option></select></div>
+</div>
+<button id="addUserBtn" class="btn bp bs" style="margin-top:10px"><i class="fas fa-user-plus"></i> Daftarkan</button>
+</div>
+<div style="padding:16px 24px;max-height:400px;overflow-y:auto">
+<div id="userList"></div>
+</div>
+</div>
+</div>
+
+<!-- ============ TOAST ============ -->
+<div id="toastC" style="position:fixed;top:70px;right:16px;z-index:150;display:flex;flex-direction:column;gap:8px;width:360px;max-width:calc(100vw - 32px);pointer-events:none"></div>
+<!-- ============ REMINDER ============ -->
+<div id="remPopup" style="display:none"></div>
 
 <script>
-    // ================================================================
-    //  KONFIGURASI FIREBASE ANDA
-    // ================================================================
-    const firebaseConfig = {
-        apiKey: "AIzaSyCu4dfd27Xo-nu_HThNz-aN16q9gcBOJjo",
-        authDomain: "gogglechat-b5743.firebaseapp.com",
-        databaseURL: "https://gogglechat-b5743-default-rtdb.firebaseio.com",
-        projectId: "gogglechat-b5743",
-        storageBucket: "gogglechat-b5743.firebasestorage.app",
-        messagingSenderId: "205095602515",
-        appId: "1:205095602515:web:31e7d97708385eab1cf9a6"
-    };
+// ============================================================
+// PASTE KONFIGURASI FIREBASE ANDA DI SINI
+// Dari Firebase Console → Project Settings → General → Your apps → Config
+// ============================================================
+const firebaseConfig = {
+  apiKey: "AIzaSyDDC6X87umshfc_JRDPcuS3AB3ZAPMqpZY",
+  authDomain: "gogglekeep-d09ef.firebaseapp.com",
+  projectId: "gogglekeep-d09ef",
+  storageBucket: "gogglekeep-d09ef.firebasestorage.app",
+  messagingSenderId: "939984828136",
+  appId: "1:939984828136:web:d69826da082181a54c7b5d",
+};
 
-    // ================================================================
-    //  INISIALISASI FIREBASE
-    // ================================================================
+// ============================================================
+// KONSTANTA
+// ============================================================
+const CATS = ['Kendala Sistem','Google Keep','Dashboard','Deposit','Withdraw','Bank','Telegram','WhatsApp','Live Chat','CS','Leader','Reminder','Bug','Maintenance','Lainnya'];
+const CC = {'Kendala Sistem':'#ff3366','Google Keep':'#00e5ff','Dashboard':'#ff6b35','Deposit':'#00ff88','Withdraw':'#ffaa00','Bank':'#00b4d8','Telegram':'#22d3ee','WhatsApp':'#4ade80','Live Chat':'#fb923c','CS':'#f472b6','Leader':'#fbbf24','Reminder':'#34d399','Bug':'#ef4444','Maintenance':'#f97316','Lainnya':'#94a3b8'};
+const PL = {rendah:'Rendah',sedang:'Sedang',tinggi:'Tinggi',darurat:'Darurat'};
+const SL = {belum:'Belum Dikerjakan',proses:'Sedang Dikerjakan',selesai:'Selesai'};
+const RL = {admin:'Admin',leader:'Leader',staff:'Staff'};
+const UCOLS = ['#00e5ff','#00ff88','#ffaa00','#f472b6','#ff6b35','#34d399','#22d3ee','#fbbf24','#fb923c','#a78bfa'];
+
+// ============================================================
+// INISIALISASI FIREBASE
+// ============================================================
+let db;
+try {
+  if (!FIREBASE_CONFIG.apiKey) throw new Error('no config');
+  firebase.initializeApp(FIREBASE_CONFIG);
+  db = firebase.firestore();
+  // Aktifkan offline persistence
+  db.enablePersistence({synchronizeTabs:true}).catch(()=>{});
+} catch(e) {
+  document.getElementById('configErr').style.display = 'flex';
+  throw new Error('Firebase tidak dikonfigurasi. Isi FIREBASE_CONFIG terlebih dahulu.');
+}
+
+// ============================================================
+// AUDIO
+// ============================================================
+let _ac=null;
+function ac(){if(!_ac)_ac=new(window.AudioContext||window.webkitAudioContext)();return _ac}
+function playNotif(){
+  try{const c=ac();[660,880].forEach((f,i)=>{const o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.frequency.value=f;o.type='sine';g.gain.setValueAtTime(.15,c.currentTime+i*.12);g.gain.exponentialRampToValueAtTime(.001,c.currentTime+i*.12+.25);o.start(c.currentTime+i*.12);o.stop(c.currentTime+i*.12+.25)})}catch(e){}}
+function playAlarm(){
+  try{const c=ac();for(let i=0;i<8;i++){const o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.frequency.value=i%2===0?880:1100;o.type='square';const t=c.currentTime+i*.25;g.gain.setValueAtTime(.08,t);g.gain.exponentialRampToValueAtTime(.001,t+.2);o.start(t);o.stop(t+.2)}}catch(e){}}
+
+// ============================================================
+// APLIKASI
+// ============================================================
+const A = {
+  user: null, users: [], notes: [], acts: [], notifs: [],
+  seenNotifs: new Set(), attachData: null, reminderKeys: new Set(),
+  unsubs: [],
+
+  // === INISIALISASI ===
+  async init(){
+    this.popCats();
+    // Cek apakah ada user di Firestore
     try {
-        firebase.initializeApp(firebaseConfig);
-        console.log('✅ Firebase berhasil diinisialisasi');
-        console.log('📁 Project:', firebaseConfig.projectId);
-        console.log('🗄️ Database:', firebaseConfig.databaseURL);
-    } catch (error) {
-        console.error('❌ Error inisialisasi Firebase:', error);
-        document.getElementById('loginError').textContent = 
-            '⚠️ Error: ' + error.message;
-        document.getElementById('loginError').style.display = 'block';
+      const snap = await db.collection('users').limit(1).get();
+      if(snap.empty) this.showScreen('setup');
+      else this.showScreen('login');
+    } catch(e) {
+      document.getElementById('configErr').style.display='flex';
+      document.getElementById('configErr').querySelector('p').textContent = 'Error koneksi Firebase: ' + e.message;
     }
+    this.bindEvents();
+  },
 
-    const auth = firebase.auth();
-    const database = firebase.database();
-    const messagesRef = database.ref('messages');
+  showScreen(name){
+    ['configErr','setupScreen','loginScreen','mainApp'].forEach(id=>document.getElementById(id).style.display='none');
+    document.getElementById(name+'Screen').style.display = name==='mainApp'?'block':'flex';
+  },
 
-    // ================================================================
-    //  KONSTANTA
-    // ================================================================
-    const ADMIN_EMAIL = 'haris789smb@gmail.com';
-    let currentUser = null;
-    let isAdmin = false;
-    let allMessages = [];
-    let currentChatId = 'oprasional';
-    let chatList = [];
+  popCats(){
+    const s1=document.getElementById('nCat'), s2=document.getElementById('fCat');
+    s1.innerHTML=''; s2.innerHTML='<option value="">Semua Kategori</option>';
+    CATS.forEach(c=>{s1.innerHTML+=`<option value="${c}">${c}</option>`;s2.innerHTML+=`<option value="${c}">${c}</option>`});
+  },
 
-    const defaultChats = [
-        { id: 'bukti_depo', name: 'Bukti Depo', members: 8 },
-        { id: 'bukti_wd', name: 'Bukti WD', members: 8 },
-        { id: 'cs_hokben', name: 'CS HOKBEN', members: 4 },
-        { id: 'ganti_gate', name: 'Ganti Gate', members: 8 },
-        { id: 'laparrr', name: 'LAPARRR', members: 8 },
-        { id: 'oprasional', name: 'OPRASIONAL HOKBEN', members: 8 },
-        { id: 'validasi', name: 'Validasi', members: 8 }
+  // === EVENT BINDING ===
+  bindEvents(){
+    document.getElementById('setupBtn').addEventListener('click',()=>this.doSetup());
+    document.getElementById('loginBtn').addEventListener('click',()=>this.doLogin());
+    document.getElementById('loginEmail').addEventListener('keydown',e=>{if(e.key==='Enter')this.doLogin()});
+    document.getElementById('setupEmail').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('setupName').focus()});
+    document.getElementById('setupName').addEventListener('keydown',e=>{if(e.key==='Enter')this.doSetup()});
+    document.getElementById('addBtn').addEventListener('click',()=>this.openNM());
+    document.getElementById('saveBtn').addEventListener('click',()=>this.saveNote());
+    document.getElementById('clearF').addEventListener('click',()=>{['searchInput','fCat','fPri','fStat','fDate'].forEach(id=>document.getElementById(id).value='');this.renderNotes()});
+    ['fCat','fPri','fStat','fDate'].forEach(id=>document.getElementById(id).addEventListener('change',()=>this.renderNotes()));
+    let st;document.getElementById('searchInput').addEventListener('input',()=>{clearTimeout(st);st=setTimeout(()=>this.renderNotes(),250)});
+    document.getElementById('notifBtn').addEventListener('click',e=>{e.stopPropagation();this.toggleNotifDD()});
+    document.getElementById('userMgrBtn').addEventListener('click',()=>this.openUM());
+    document.getElementById('addUserBtn').addEventListener('click',()=>this.addUser());
+    document.getElementById('logoutBtn').addEventListener('click',()=>this.logout());
+    document.getElementById('nAttach').addEventListener('change',e=>this.handleAtt(e));
+    document.addEventListener('click',e=>{if(!e.target.closest('#notifBtn')&&!e.target.closest('#notifDD'))document.getElementById('notifDD').style.display='none'});
+    document.addEventListener('keydown',e=>{
+      if(e.key==='Escape'){if(document.getElementById('remPopup').style.display!=='none')this.closeRem();else if(document.getElementById('detailModal').style.display!=='none')closeDM();else if(document.getElementById('userModal').style.display!=='none')closeUM();else if(document.getElementById('noteModal').style.display!=='none')closeNM()}
+      if((e.ctrlKey||e.metaKey)&&e.key==='n'&&document.getElementById('mainApp').style.display!=='none'){e.preventDefault();this.openNM()}
+    });
+    document.getElementById('noteModal').addEventListener('click',e=>{if(e.target===document.getElementById('noteModal'))closeNM()});
+    document.getElementById('detailModal').addEventListener('click',e=>{if(e.target===document.getElementById('detailModal'))closeDM()});
+    document.getElementById('userModal').addEventListener('click',e=>{if(e.target===document.getElementById('userModal'))closeUM()});
+  },
+
+  // === SETUP AWAL ===
+  async doSetup(){
+    const email=document.getElementById('setupEmail').value.trim().toLowerCase();
+    const name=document.getElementById('setupName').value.trim();
+    if(!email||!email.includes('@')){this.shake(document.getElementById('setupEmail'));return}
+    if(!name){this.shake(document.getElementById('setupName'));return}
+    const uid=this.emailToId(email);
+    try{
+      await db.collection('users').doc(uid).set({
+        email, name, role:'admin',
+        color: UCOLS[0],
+        registeredBy:'system',
+        createdAt:firebase.firestore.FieldValue.serverTimestamp()
+      });
+      this.user={id:uid,email,name,role:'admin',color:UCOLS[0]};
+      this.enterApp();
+    }catch(e){this.toast('Error','Gagal membuat akun: '+e.message,'','error')}
+  },
+
+  // === LOGIN ===
+  async doLogin(){
+    const email=document.getElementById('loginEmail').value.trim().toLowerCase();
+    const errEl=document.getElementById('loginErr');
+    errEl.style.display='none';
+    if(!email||!email.includes('@')){this.shake(document.getElementById('loginEmail'));return}
+    const uid=this.emailToId(email);
+    try{
+      const doc=await db.collection('users').doc(uid).get();
+      if(!doc.exists){errEl.textContent='Gmail Anda belum terdaftar. Hubungi Admin/Leader.';errEl.style.display='block';this.shake(document.getElementById('loginEmail'));return}
+      this.user={id:uid,...doc.data()};
+      this.enterApp();
+    }catch(e){errEl.textContent='Error: '+e.message;errEl.style.display='block'}
+  },
+
+  emailToId(e){return e.replace(/[^a-z0-9]/gi,'_')},
+
+  // === MASUK DASHBOARD ===
+  enterApp(){
+    this.showScreen('mainApp');
+    const u=this.user;
+    document.getElementById('uName').textContent=u.name;
+    document.getElementById('uRole').textContent=RL[u.role];
+    const av=document.getElementById('uAvatar');av.style.background=u.color;av.textContent=u.name.split(' ').map(w=>w[0]).join('').substring(0,2);
+    // Tampilkan tombol kelola user hanya untuk admin/leader
+    document.getElementById('userMgrBtn').style.display=(u.role==='admin'||u.role==='leader')?'inline-flex':'none';
+    this.attachData=null;
+    this.listenAll();
+    this.startReminderChecker();
+    this.logAct('login','','masuk ke dashboard');
+  },
+
+  // === REAL-TIME LISTENERS ===
+  listenAll(){
+    // Hapus listener sebelumnya
+    this.unsubs.forEach(u=>u());
+    this.unsubs=[];
+
+    // Users
+    const u1=db.collection('users').onSnapshot(snap=>{
+      this.users=snap.docs.map(d=>({id:d.id,...d.data()}));
+      this.renderUserList();
+    });this.unsubs.push(u1);
+
+    // Notes
+    const u2=db.collection('notes').orderBy('createdAt','desc').onSnapshot(snap=>{
+      this.notes=snap.docs.map(d=>({id:d.id,...d.data()}));
+      this.renderNotes();this.renderStats();
+    });this.unsubs.push(u2);
+
+    // Activities
+    const u3=db.collection('activities').orderBy('timestamp','desc').limit(40).onSnapshot(snap=>{
+      this.acts=snap.docs.map(d=>({id:d.id,...d.data()}));
+      this.renderActs();
+    });this.unsubs.push(u3);
+
+    // Notifications (hanya untuk user ini)
+    const u4=db.collection('notifications').where('userId','==',this.user.id).orderBy('timestamp','desc').onSnapshot(snap=>{
+      snap.docChanges().forEach(ch=>{
+        if(ch.type==='added'&&!ch.metadata.hasPendingWrites&&!this.seenNotifs.has(ch.doc.id)){
+          const d=ch.doc.data();
+          this.toast(d.title||'Notifikasi',d.message||'',d.category||'','info');
+          playNotif();
+        }
+        this.seenNotifs.add(ch.doc.id);
+      });
+      this.notifs=snap.docs.map(d=>({id:d.id,...d.data()}));
+      this.updateBadge();
+    });this.unsubs.push(u4);
+  },
+
+  // === LOGOUT ===
+  logout(){
+    this.unsubs.forEach(u=>u());this.unsubs=[];
+    this.user=null;this.notes=[];this.acts=[];this.notifs=[];this.seenNotifs.clear();
+    document.getElementById('loginEmail').value='';
+    this.showScreen('login');
+  },
+
+  // === STATISTIK ===
+  renderStats(){
+    const today=new Date().toISOString().split('T')[0];
+    const n=this.notes;
+    const stats=[
+      {l:'Total Catatan',v:n.length,i:'fa-layer-group',c:'var(--cyan)',b:'rgba(0,229,255,.1)'},
+      {l:'Hari Ini',v:n.filter(x=>(x.createdAt?.toDate?.()||new Date(x.createdAt)).toISOString().split('T')[0]===today).length,i:'fa-calendar-day',c:'var(--green)',b:'rgba(0,255,136,.1)'},
+      {l:'Belum Dikerjakan',v:n.filter(x=>x.status==='belum').length,i:'fa-clock',c:'var(--text2)',b:'rgba(148,163,184,.1)'},
+      {l:'Darurat',v:n.filter(x=>x.priority==='darurat'&&x.status!=='selesai').length,i:'fa-exclamation-triangle',c:'var(--red)',b:'rgba(255,51,102,.1)'},
+      {l:'Selesai',v:n.filter(x=>x.status==='selesai').length,i:'fa-check-circle',c:'var(--green)',b:'rgba(0,255,136,.1)'},
+      {l:'Sedang Proses',v:n.filter(x=>x.status==='proses').length,i:'fa-spinner',c:'var(--amber)',b:'rgba(255,170,0,.1)'},
     ];
+    document.getElementById('statsSection').innerHTML=`<div class="sg" style="display:grid;grid-template-columns:repeat(6,1fr);gap:12px">${stats.map((s,i)=>`
+      <div class="glass" style="padding:20px;animation:cu .5s ease ${i*80}ms backwards">
+        <div style="width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;background:${s.b};color:${s.c};margin-bottom:10px"><i class="fas ${s.i}"></i></div>
+        <div class="fd" style="font-size:1.8rem;font-weight:900;color:${s.c};line-height:1">${s.v}</div>
+        <div style="font-size:.75rem;color:var(--text2);margin-top:4px">${s.l}</div>
+      </div>`).join('')}</div>`;
+  },
 
-    // ================================================================
-    //  DOM ELEMENTS
-    // ================================================================
-    const loginPage = document.getElementById('loginPage');
-    const dashboard = document.getElementById('dashboard');
-    const loginBtn = document.getElementById('loginBtn');
-    const loginError = document.getElementById('loginError');
-    const loginSuccess = document.getElementById('loginSuccess');
-    const logoutIcon = document.getElementById('logoutIcon');
-    const logoutConfirm = document.getElementById('logoutConfirm');
-    const cancelLogout = document.getElementById('cancelLogout');
-    const confirmLogout = document.getElementById('confirmLogout');
-    const sidebarAvatar = document.getElementById('sidebarAvatar');
-    const sidebarName = document.getElementById('sidebarName');
-    const statusIndicator = document.getElementById('statusIndicator');
-    const chatListEl = document.getElementById('chatList');
-    const searchChat = document.getElementById('searchChat');
-    const chatAvatar = document.getElementById('chatAvatar');
-    const chatName = document.getElementById('chatName');
-    const chatMembers = document.getElementById('chatMembers');
-    const messagesArea = document.getElementById('messagesArea');
-    const messageInput = document.getElementById('messageInput');
-    const sendBtn = document.getElementById('sendBtn');
-    const createGroupBtn = document.querySelector('.create-group-btn');
-
-    // ================================================================
-    //  AUTH STATE
-    // ================================================================
-    auth.onAuthStateChanged(user => {
-        if (user) {
-            currentUser = user;
-            const email = user.email || '';
-            isAdmin = (email.toLowerCase() === ADMIN_EMAIL.toLowerCase());
-            
-            loginPage.style.display = 'none';
-            dashboard.style.display = 'block';
-            
-            const displayName = user.displayName || email.split('@')[0] || 'User';
-            sidebarName.textContent = displayName;
-            sidebarAvatar.textContent = displayName.charAt(0).toUpperCase();
-            statusIndicator.textContent = '● Online';
-            statusIndicator.style.color = '#4caf50';
-            
-            messageInput.disabled = false;
-            sendBtn.disabled = false;
-            
-            loadMessages();
-            loadChatList();
-            
-            loginSuccess.textContent = '✅ Login berhasil!';
-            loginSuccess.style.display = 'block';
-            setTimeout(() => {
-                loginSuccess.style.display = 'none';
-            }, 3000);
-        } else {
-            currentUser = null;
-            isAdmin = false;
-            loginPage.style.display = 'flex';
-            dashboard.style.display = 'none';
-            messageInput.disabled = true;
-            sendBtn.disabled = true;
-            messagesRef.off();
-            
-            loginError.style.display = 'none';
-            loginSuccess.style.display = 'none';
-        }
+  // === RENDER CATATAN ===
+  renderNotes(){
+    const filtered=this.getFiltered();
+    const g=document.getElementById('notesGrid'),em=document.getElementById('emptyState');
+    if(!filtered.length){g.innerHTML='';em.style.display='block';return}
+    em.style.display='none';
+    // Sort: pinned first, then by createdAt desc
+    filtered.sort((a,b)=>{
+      if(a.pinned&&!b.pinned)return -1;if(!a.pinned&&b.pinned)return 1;
+      return (b.createdAt?.toDate?b.createdAt.toDate():new Date(b.createdAt))-(a.createdAt?.toDate?a.createdAt.toDate():new Date(a.createdAt));
     });
+    g.innerHTML=filtered.map((n,i)=>{
+      const cc=CC[n.category]||'#94a3b8';
+      const ta=this.timeAgo(n.createdAt);
+      const ccnt=n.comments?.length||0;
+      const hm=n.comments?.some(c=>c.text&&c.text.includes('@'+this.user.name));
+      const creator=this.users.find(u=>u.id===n.createdById);
+      return `<div class="glass nc ${n.pinned?'pinned':''}" style="animation:fi .3s ease ${i*40}ms backwards;padding:0" onclick="A.openDetail('${n.id}')">
+        <div class="cb" style="background:${cc}"></div>
+        <div style="padding:16px 16px 14px 18px">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;gap:8px">
+            <h3 style="font-size:.92rem;font-weight:700;line-height:1.3;flex:1;${n.status==='selesai'?'text-decoration:line-through;opacity:.6':''}">${this.esc(n.title)}</h3>
+            ${n.pinned?'<i class="fas fa-thumbtack" style="color:var(--cyan);font-size:.75rem;flex-shrink:0"></i>':''}
+          </div>
+          <p style="font-size:.8rem;color:var(--text2);line-height:1.5;margin-bottom:10px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden">${this.esc(n.content)}</p>
+          <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px">
+            <span class="badge b-${n.priority}">${PL[n.priority]}</span>
+            <span class="bs-badge b-${n.status}">${SL[n.status]}</span>
+            <span style="font-size:.68rem;padding:3px 8px;border-radius:20px;background:${cc}15;color:${cc};border:1px solid ${cc}30;font-weight:600">${n.category}</span>
+          </div>
+          ${n.attachment?`<div style="margin-bottom:10px"><img src="${n.attachment}" style="width:100%;max-height:120px;object-fit:cover;border-radius:var(--rs)}"></div>`:''}
+          ${n.reminderDate?`<div style="font-size:.72rem;color:var(--amber);margin-bottom:8px"><i class="fas fa-bell"></i> ${n.reminderDate} ${n.reminderTime||''}${n.reminderRepeat==='daily'?' (Harian)':''}</div>`:''}
+          <div style="display:flex;justify-content:space-between;align-items:center;font-size:.72rem;color:var(--muted)">
+            <div style="display:flex;align-items:center;gap:6px">
+              <span style="width:18px;height:18px;border-radius:50%;background:${creator?.color||'#666'};display:inline-flex;align-items:center;justify-content:center;font-size:.5rem;color:#000;font-weight:700">${(creator?.name||'?').split(' ').map(w=>w[0]).join('').substring(0,2)}</span>
+              <span>${this.esc(creator?.name||'Unknown')}</span><span>· ${ta}</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              ${ccnt?`<span><i class="fas fa-comment" style="margin-right:3px"></i>${ccnt}</span>`:''}
+              ${hm?'<span style="color:var(--cyan)"><i class="fas fa-at"></i></span>':''}
+            </div>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  },
 
-    // ================================================================
-    //  LOGIN / LOGOUT
-    // ================================================================
-    loginBtn.addEventListener('click', () => {
-        loginError.style.display = 'none';
-        loginSuccess.style.display = 'none';
-        
-        const provider = new firebase.auth.GoogleAuthProvider();
-        provider.setCustomParameters({ prompt: 'select_account' });
-        auth.signInWithPopup(provider).catch(error => {
-            loginError.textContent = 'Login gagal: ' + error.message;
-            loginError.style.display = 'block';
+  getFiltered(){
+    let n=[...this.notes];
+    const s=document.getElementById('searchInput').value.toLowerCase().trim();
+    const cat=document.getElementById('fCat').value;
+    const pri=document.getElementById('fPri').value;
+    const stat=document.getElementById('fStat').value;
+    const df=document.getElementById('fDate').value;
+    if(s){n=n.filter(x=>{
+      const cr=this.users.find(u=>u.id===x.createdById);
+      return x.title.toLowerCase().includes(s)||x.content.toLowerCase().includes(s)||(cr?.name||'').toLowerCase().includes(s)||x.category.toLowerCase().includes(s);
+    })}
+    if(cat)n=n.filter(x=>x.category===cat);
+    if(pri)n=n.filter(x=>x.priority===pri);
+    if(stat)n=n.filter(x=>x.status===stat);
+    if(df){
+      const now=new Date();const td=now.toISOString().split('T')[0];
+      if(df==='today')n=n.filter(x=>(x.createdAt?.toDate?x.createdAt.toDate():new Date(x.createdAt)).toISOString().split('T')[0]===td);
+      else if(df==='week'){const wa=new Date(now-7*864e5).toISOString().split('T')[0];n=n.filter(x=>(x.createdAt?.toDate?x.createdAt.toDate():new Date(x.createdAt)).toISOString().split('T')[0]>=wa)}
+      else if(df==='month'){const ma=new Date(now-30*864e5).toISOString().split('T')[0];n=n.filter(x=>(x.createdAt?.toDate?x.createdAt.toDate():new Date(x.createdAt)).toISOString().split('T')[0]>=ma)}
+    }
+    return n;
+  },
+
+  // === MODAL CATATAN ===
+  openNM(noteId=null){
+    const m=document.getElementById('noteModal');
+    document.getElementById('nForm').reset();
+    this.attachData=null;document.getElementById('attPrev').style.display='none';
+    if(noteId){
+      const note=this.notes.find(n=>n.id===noteId);if(!note)return;
+      if(!this.canEdit(note)){this.toast('Akses Ditolak','Anda tidak memiliki izin untuk mengedit catatan ini.','','error');return}
+      document.getElementById('nModalTitle').textContent='EDIT CATATAN';
+      document.getElementById('nId').value=note.id;
+      document.getElementById('nTitle').value=note.title;
+      document.getElementById('nContent').value=note.content;
+      document.getElementById('nCat').value=note.category;
+      document.getElementById('nPri').value=note.priority;
+      document.getElementById('nStat').value=note.status;
+      document.getElementById('nPin').value=note.pinned?'true':'false';
+      if(note.reminderDate){document.getElementById('nRDate').value=note.reminderDate;document.getElementById('nRTime').value=note.reminderTime||'';document.getElementById('nRRepeat').value=note.reminderRepeat||'none'}
+      if(note.attachment){this.attachData=note.attachment;document.getElementById('attImg').src=note.attachment;document.getElementById('attPrev').style.display='block'}
+    }else{
+      document.getElementById('nModalTitle').textContent='CATATAN BARU';
+      document.getElementById('nId').value='';
+    }
+    document.getElementById('nStat').disabled=(this.user.role==='staff'&&!noteId);
+    m.style.display='flex';m.classList.remove('cl');
+    document.getElementById('nTitle').focus();
+  },
+
+  async saveNote(){
+    const id=document.getElementById('nId').value;
+    const title=document.getElementById('nTitle').value.trim();
+    const content=document.getElementById('nContent').value.trim();
+    if(!title){this.shake(document.getElementById('nTitle'));return}
+    const data={
+      title,content,
+      category:document.getElementById('nCat').value,
+      priority:document.getElementById('nPri').value,
+      status:document.getElementById('nStat').value,
+      pinned:document.getElementById('nPin').value==='true',
+      attachment:this.attachData||null,
+      reminderDate:document.getElementById('nRDate').value||null,
+      reminderTime:document.getElementById('nRTime').value||null,
+      reminderRepeat:document.getElementById('nRRepeat').value,
+      updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+    };
+    try{
+      if(id){
+        await db.collection('notes').doc(id).update(data);
+        this.logAct('edit',id,title,'mengubah catatan');
+        // Notifikasi ke pembuat catatan jika diedit orang lain
+        const note=this.notes.find(n=>n.id===id);
+        if(note&&note.createdById!==this.user.id){
+          await db.collection('notifications').add({userId:note.createdById,noteId:id,title:'Catatan Diedit',message:`${this.user.name} mengubah catatan "${title}"`,category:data.category,timestamp:firebase.firestore.FieldValue.serverTimestamp(),read:false});
+        }
+      }else{
+        data.createdById=this.user.id;
+        data.createdByName=this.user.name;
+        data.createdAt=firebase.firestore.FieldValue.serverTimestamp();
+        data.comments=[];
+        const ref=await db.collection('notes').add(data);
+        this.logAct('create',ref.id,title,'membuat catatan baru');
+        // Notifikasi ke semua user lain
+        const batch=db.batch();
+        this.users.forEach(u=>{
+          if(u.id===this.user.id)return;
+          batch.set(db.collection('notifications').doc(),{userId:u.id,noteId:ref.id,title:'Catatan Baru',message:`${this.user.name} membuat catatan "${title}"`,category:data.category,timestamp:firebase.firestore.FieldValue.serverTimestamp(),read:false});
         });
+        await batch.commit();
+      }
+      closeNM();
+    }catch(e){this.toast('Error','Gagal menyimpan: '+e.message,'','error')}
+  },
+
+  async deleteNote(noteId){
+    const note=this.notes.find(n=>n.id===noteId);if(!note)return;
+    if(this.user.role!=='admin'){this.toast('Akses Ditolak','Hanya Admin yang bisa menghapus catatan.','','error');return}
+    if(!this._delConfirm){
+      this._delConfirm=true;
+      this.toast('Konfirmasi Hapus','Klik tombol hapus sekali lagi untuk menghapus "'+note.title+'"','','warning');
+      setTimeout(()=>this._delConfirm=false,5000);return;
+    }
+    this._delConfirm=false;
+    try{
+      await db.collection('notes').doc(noteId).delete();
+      this.logAct('delete',noteId,note.title,'menghapus catatan');
+      // Notifikasi ke semua
+      const batch=db.batch();
+      this.users.forEach(u=>{
+        if(u.id===this.user.id)return;
+        batch.set(db.collection('notifications').doc(),{userId:u.id,noteId,title:'Catatan Dihapus',message:`${this.user.name} menghapus catatan "${note.title}"`,category:note.category,timestamp:firebase.firestore.FieldValue.serverTimestamp(),read:false});
+      });
+      await batch.commit();
+      closeDM();
+    }catch(e){this.toast('Error','Gagal menghapus: '+e.message,'','error')}
+  },
+
+  canEdit(note){
+    if(this.user.role==='admin')return true;
+    if(this.user.role==='leader')return true;
+    return note.createdById===this.user.id;
+  },
+
+  // === DETAIL ===
+  openDetail(noteId){
+    const note=this.notes.find(n=>n.id===noteId);if(!note)return;
+    document.getElementById('detailModal').dataset.noteId=noteId;
+    const cc=CC[note.category]||'#94a3b8';
+    const ce=this.canEdit(note);const cd=this.user.role==='admin';
+    const creator=this.users.find(u=>u.id===note.createdById);
+    const created=note.createdAt?.toDate?note.createdAt.toDate():new Date(note.createdAt);
+    const updated=note.updatedAt?.toDate?note.updatedAt.toDate():new Date(note.updatedAt);
+    document.getElementById('detailContent').innerHTML=`
+      <div style="padding:20px 24px;border-bottom:1px solid var(--gb);display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
+        <div style="flex:1">
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">
+            <span class="badge b-${note.priority}">${PL[note.priority]}</span>
+            <span class="bs-badge b-${note.status}">${SL[note.status]}</span>
+            <span style="font-size:.68rem;padding:3px 8px;border-radius:20px;background:${cc}15;color:${cc};border:1px solid ${cc}30;font-weight:600">${note.category}</span>
+            ${note.pinned?'<span style="font-size:.72rem;color:var(--cyan)"><i class="fas fa-thumbtack"></i> Di-pin</span>':''}
+          </div>
+          <h2 style="font-size:1.15rem;font-weight:700;line-height:1.4;${note.status==='selesai'?'text-decoration:line-through;opacity:.6':''}">${this.esc(note.title)}</h2>
+        </div>
+        <button onclick="closeDM()" class="btn bgh bs" aria-label="Tutup"><i class="fas fa-times"></i></button>
+      </div>
+      <div style="padding:20px 24px">
+        <div style="font-size:.88rem;color:var(--text2);line-height:1.7;white-space:pre-wrap;margin-bottom:16px">${this.esc(note.content)}</div>
+        ${note.attachment?`<div style="margin-bottom:16px"><img src="${note.attachment}" style="max-width:100%;border-radius:var(--rs);border:1px solid var(--gb)"></div>`:''}
+        ${note.reminderDate?`<div style="font-size:.82rem;color:var(--amber);margin-bottom:16px;padding:8px 12px;background:rgba(255,170,0,.06);border-radius:var(--rs);border:1px solid rgba(255,170,0,.15)"><i class="fas fa-bell"></i> Reminder: ${note.reminderDate} ${note.reminderTime||''}${note.reminderRepeat==='daily'?' (Setiap Hari)':''}</div>`:''}
+        <div style="font-size:.75rem;color:var(--muted);margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--gb)">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+            <span style="width:22px;height:22px;border-radius:50%;background:${creator?.color||'#666'};display:inline-flex;align-items:center;justify-content:center;font-size:.6rem;color:#000;font-weight:700">${(creator?.name||'?').split(' ').map(w=>w[0]).join('').substring(0,2)}</span>
+            <span style="color:var(--text2)">${this.esc(creator?.name||'Unknown')}</span>
+            <span style="background:rgba(255,255,255,.06);padding:2px 8px;border-radius:10px;font-size:.65rem">${RL[creator?.role||'staff']}</span>
+          </div>
+          Dibuat: ${this.fmtDT(created)} · Diubah: ${this.fmtDT(updated)}
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px">
+          ${note.status!=='belum'?`<button class="btn bgh bs" onclick="A.chStat('${noteId}','belum')"><i class="fas fa-circle" style="color:var(--text2)"></i> Belum</button>`:''}
+          ${note.status!=='proses'?`<button class="btn bgh bs" onclick="A.chStat('${noteId}','proses')"><i class="fas fa-spinner" style="color:var(--cyan)"></i> Proses</button>`:''}
+          ${note.status!=='selesai'?`<button class="btn bgh bs" onclick="A.chStat('${noteId}','selesai')"><i class="fas fa-check" style="color:var(--green)"></i> Selesai</button>`:''}
+          ${this.user.role!=='staff'?`<button class="btn bgh bs" onclick="A.togPin('${noteId}')"><i class="fas fa-thumbtack" style="color:${note.pinned?'var(--cyan)':'var(--muted)'}"></i> ${note.pinned?'Unpin':'Pin'}</button>`:''}
+          ${ce?`<button class="btn bp bs" onclick="closeDM();A.openNM('${noteId}')"><i class="fas fa-edit"></i> Edit</button>`:''}
+          ${cd?`<button class="btn br bs" onclick="A.deleteNote('${noteId}')"><i class="fas fa-trash"></i> Hapus</button>`:''}
+        </div>
+        <h4 style="font-size:.85rem;font-weight:700;color:var(--text2);margin-bottom:12px"><i class="fas fa-comments" style="margin-right:6px"></i>Komentar (${note.comments?.length||0})</h4>
+        <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;max-height:300px;overflow-y:auto">
+          ${(note.comments||[]).map(c=>{
+            const cu=this.users.find(u=>u.id===c.createdById);
+            const cd2=c.createdAt?.toDate?c.createdAt.toDate():new Date(c.createdAt);
+            return `<div class="ci"><div style="display:flex;align-items:center;gap:6px;margin-bottom:4px"><span style="width:18px;height:18px;border-radius:50%;background:${cu?.color||'#666'};display:inline-flex;align-items:center;justify-content:center;font-size:.5rem;color:#000;font-weight:700">${(cu?.name||'?').split(' ').map(w=>w[0]).join('').substring(0,2)}</span><span style="font-size:.78rem;font-weight:600">${this.esc(cu?.name||'Unknown')}</span><span style="font-size:.65rem;color:var(--muted)">${this.timeAgo(c.createdAt)}</span></div><p style="font-size:.82rem;color:var(--text2);line-height:1.5;padding-left:24px">${this.renderMentions(c.text)}</p></div>`;
+          }).join('')}
+        </div>
+        <div id="mentionH" style="display:none;position:absolute;background:var(--bg2);border:1px solid var(--gb);border-radius:var(--rs);max-height:150px;overflow-y:auto;z-index:10;width:220px"></div>
+        <div style="display:flex;gap:8px;position:relative">
+          <textarea id="cmtInput" class="inp" placeholder="Tulis komentar... Gunakan @ untuk mention" rows="2" style="flex:1;font-size:.84rem"></textarea>
+          <button class="btn bp bs" style="align-self:flex-end" onclick="A.addCmt('${noteId}')"><i class="fas fa-paper-plane"></i></button>
+        </div>
+      </div>`;
+    document.getElementById('detailModal').style.display='flex';
+    document.getElementById('detailModal').classList.remove('cl');
+    this.setupMention(noteId);
+  },
+
+  setupMention(noteId){
+    const inp=document.getElementById('cmtInput');if(!inp)return;
+    inp.addEventListener('input',()=>{
+      const v=inp.value;const la=v.lastIndexOf('@');
+      if(la!==-1){const af=v.substring(la+1);if(!af.includes(' ')&&af.length>0){
+        const m=this.users.filter(u=>u.name.toLowerCase().includes(af.toLowerCase()));
+        if(m.length){const h=document.getElementById('mentionH');h.style.display='block';h.innerHTML=m.map(u=>`<div style="padding:8px 12px;cursor:pointer;font-size:.82rem;display:flex;align-items:center;gap:8px" onmousedown="A.insMention('${u.name}')"><span style="width:20px;height:20px;border-radius:50%;background:${u.color};display:inline-flex;align-items:center;justify-content:center;font-size:.55rem;color:#000;font-weight:700">${u.name.split(' ').map(w=>w[0]).join('').substring(0,2)}</span>${this.esc(u.name)}</div>`).join('');return}
+      }}
+      const h=document.getElementById('mentionH');if(h)h.style.display='none';
     });
+  },
 
-    logoutIcon.addEventListener('click', () => {
-        logoutConfirm.classList.add('active');
+  insMention(name){
+    const inp=document.getElementById('cmtInput');const v=inp.value;const la=v.lastIndexOf('@');
+    inp.value=v.substring(0,la)+'@'+name+' ';
+    const h=document.getElementById('mentionH');if(h)h.style.display='none';inp.focus();
+  },
+
+  renderMentions(text){
+    if(!text)return'';
+    return this.esc(text).replace(/@([\w\s]+)/g,(m,name)=>{
+      const u=this.users.find(x=>x.name.toLowerCase()===name.trim().toLowerCase());
+      return `<span class="mention" style="color:${u?.color||'var(--cyan)'}">@${name.trim()}</span>`;
     });
+  },
 
-    cancelLogout.addEventListener('click', () => {
-        logoutConfirm.classList.remove('active');
+  async addCmt(noteId){
+    const inp=document.getElementById('cmtInput');const text=inp.value.trim();if(!text)return;
+    try{
+      await db.collection('notes').doc(noteId).update({
+        comments:firebase.firestore.FieldValue.arrayUnion({
+          text,createdById:this.user.id,createdByName:this.user.name,
+          createdAt:firebase.firestore.FieldValue.serverTimestamp()
+        }),
+        updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+      });
+      this.logAct('comment',noteId,this.notes.find(n=>n.id===noteId)?.title||'','menambahkan komentar');
+      // Notifikasi mention
+      this.users.forEach(u=>{
+        if(u.id!==this.user.id&&text.includes('@'+u.name)){
+          db.collection('notifications').add({userId:u.id,noteId,title:'Anda Disebut',message:`${this.user.name} menyebut Anda di komentar`,category:this.notes.find(n=>n.id===noteId)?.category||'',timestamp:firebase.firestore.FieldValue.serverTimestamp(),read:false});
+        }
+      });
+      // Notifikasi ke pembuat jika bukan dia sendiri
+      const note=this.notes.find(n=>n.id===noteId);
+      if(note&&note.createdById!==this.user.id){
+        db.collection('notifications').add({userId:note.createdById,noteId,title:'Komentar Baru',message:`${this.user.name} berkomentar pada "${note.title}"`,category:note.category,timestamp:firebase.firestore.FieldValue.serverTimestamp(),read:false});
+      }
+    }catch(e){this.toast('Error','Gagal mengirim komentar: '+e.message,'','error')}
+  },
+
+  async chStat(noteId,newStat){
+    const note=this.notes.find(n=>n.id===noteId);if(!note)return;
+    if(this.user.role==='staff'&&note.createdById!==this.user.id)return;
+    const old=note.status;
+    try{
+      await db.collection('notes').doc(noteId).update({status:newStat,updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
+      this.logAct('status',noteId,note.title,`mengubah status dari ${SL[old]} menjadi ${SL[newStat]}`);
+      if(note.createdById!==this.user.id){
+        db.collection('notifications').add({userId:note.createdById,noteId,title:'Status Diubah',message:`${this.user.name} mengubah status "${note.title}" menjadi ${SL[newStat]}`,category:note.category,timestamp:firebase.firestore.FieldValue.serverTimestamp(),read:false});
+      }
+    }catch(e){this.toast('Error',e.message,'','error')}
+  },
+
+  async togPin(noteId){
+    const note=this.notes.find(n=>n.id===noteId);if(!note)return;
+    if(this.user.role==='staff')return;
+    try{
+      await db.collection('notes').doc(noteId).update({pinned:!note.pinned,updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
+      this.logAct('pin',noteId,note.title,!note.pinned?'mem-pin catatan':'meng-unpin catatan');
+    }catch(e){this.toast('Error',e.message,'','error')}
+  },
+
+  // === AKTIVITAS ===
+  async logAct(action,noteId,noteTitle,details){
+    try{
+      await db.collection('activities').add({action,noteId:noteId||null,noteTitle:noteTitle||'',userId:this.user.id,userName:this.user.name,userRole:this.user.role,timestamp:firebase.firestore.FieldValue.serverTimestamp(),details});
+    }catch(e){}
+  },
+
+  renderActs(){
+    const el=document.getElementById('actList');
+    if(!this.acts.length){el.innerHTML='<p style="font-size:.8rem;color:var(--muted);text-align:center;padding:20px">Belum ada aktivitas</p>';return}
+    const iconM={create:'fa-plus-circle',edit:'fa-pen',delete:'fa-trash',comment:'fa-comment',status:'fa-exchange-alt',pin:'fa-thumbtack',login:'fa-sign-in-alt'};
+    const colM={create:'var(--green)',edit:'var(--amber)',delete:'var(--red)',comment:'var(--cyan)',status:'var(--orange)',pin:'var(--cyan)',login:'var(--text2)'};
+    el.innerHTML=this.acts.map(a=>{
+      const u=this.users.find(x=>x.id===a.userId);
+      return `<div class="ai"><div style="display:flex;gap:10px;align-items:flex-start">
+        <div style="width:28px;height:28px;border-radius:50%;background:${u?.color||'#666'};display:flex;align-items:center;justify-content:center;font-size:.6rem;color:#000;font-weight:700;flex-shrink:0">${(a.userName||'?').split(' ').map(w=>w[0]).join('').substring(0,2)}</div>
+        <div style="flex:1;min-width:0">
+          <p style="font-size:.78rem;line-height:1.4"><span style="font-weight:600">${this.esc(a.userName)}</span> <span style="color:${colM[a.action]||'var(--text2)'}">${a.details}</span></p>
+          ${a.noteTitle?`<p style="font-size:.72rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${this.esc(a.noteTitle)}</p>`:''}
+          <p style="font-size:.65rem;color:var(--muted);margin-top:2px">${this.timeAgo(a.timestamp)}</p>
+        </div>
+        <i class="fas ${iconM[a.action]||'fa-circle'}" style="color:${colM[a.action]||'var(--muted)'};font-size:.7rem;margin-top:4px;flex-shrink:0"></i>
+      </div></div>`;
+    }).join('');
+  },
+
+  // === NOTIFIKASI ===
+  updateBadge(){
+    const c=this.notifs.filter(n=>!n.read).length;
+    const b=document.getElementById('notifBadge');
+    if(c>0){b.style.display='flex';b.textContent=c>99?'99+':c}else{b.style.display='none'}
+  },
+
+  async toggleNotifDD(){
+    const dd=document.getElementById('notifDD');
+    if(dd.style.display==='block'){dd.style.display='none';return}
+    // Tandai semua dibaca
+    const unread=this.notifs.filter(n=>!n.read);
+    if(unread.length){
+      const batch=db.batch();
+      unread.forEach(n=>batch.update(db.collection('notifications').doc(n.id),{read:true}));
+      await batch.commit();
+    }
+    const list=this.notifs.slice(0,20);
+    if(!list.length){dd.innerHTML='<div style="padding:20px;text-align:center;color:var(--muted);font-size:.82rem">Tidak ada notifikasi</div>';dd.style.display='block';return}
+    dd.innerHTML=`<div style="padding:12px 16px;border-bottom:1px solid var(--gb);font-size:.82rem;font-weight:700;color:var(--cyan)">Notifikasi</div>`+
+      list.map(n=>`<div style="padding:10px 16px;border-bottom:1px solid var(--gb);cursor:pointer;transition:background .2s" onmouseover="this.style.background='rgba(255,255,255,.03)'" onmouseout="this.style.background='transparent'" onclick="document.getElementById('notifDD').style.display='none';${n.noteId?`A.openDetail('${n.noteId}')`:''}">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">
+          ${n.category?`<span style="font-size:.68rem;padding:2px 6px;border-radius:10px;background:${CC[n.category]||'#94a3b8'}15;color:${CC[n.category]||'#94a3b8'}">${n.category}</span>`:''}
+          <span style="font-size:.65rem;color:var(--muted)">${this.timeAgo(n.timestamp)}</span>
+        </div>
+        <p style="font-size:.78rem;color:var(--text2)">${this.esc(n.message)}</p>
+      </div>`).join('');
+    dd.style.display='block';
+  },
+
+  // === KELOLA USER ===
+  openUM(){
+    this.renderUserList();
+    document.getElementById('userModal').style.display='flex';
+    document.getElementById('userModal').classList.remove('cl');
+  },
+
+  renderUserList(){
+    const el=document.getElementById('userList');if(!el)return;
+    if(!this.users.length){el.innerHTML='<p style="color:var(--muted);font-size:.82rem;text-align:center;padding:20px">Belum ada pengguna</p>';return}
+    el.innerHTML=`<table style="width:100%;border-collapse:collapse;font-size:.82rem">
+      <thead><tr style="color:var(--text2);text-align:left;border-bottom:1px solid var(--gb)">
+        <th style="padding:8px 4px">Pengguna</th><th style="padding:8px 4px">Gmail</th><th style="padding:8px 4px">Peran</th><th style="padding:8px 4px;text-align:right">Aksi</th>
+      </tr></thead>
+      <tbody>${this.users.map(u=>`<tr style="border-bottom:1px solid var(--gb)">
+        <td style="padding:10px 4px"><div style="display:flex;align-items:center;gap:8px">
+          <span style="width:26px;height:26px;border-radius:50%;background:${u.color};display:inline-flex;align-items:center;justify-content:center;font-size:.6rem;color:#000;font-weight:700;flex-shrink:0">${u.name.split(' ').map(w=>w[0]).join('').substring(0,2)}</span>
+          <span style="font-weight:600">${this.esc(u.name)}</span>
+          ${u.id===this.user.id?'<span style="font-size:.6rem;color:var(--cyan);background:rgba(0,229,255,.1);padding:1px 6px;border-radius:8px">(Anda)</span>':''}
+        </div></td>
+        <td style="padding:10px 4px;color:var(--text2);font-size:.78rem">${this.esc(u.email)}</td>
+        <td style="padding:10px 4px"><span class="badge b-${u.role==='admin'?'darurat':u.role==='leader'?'sedang':'rendah'}" style="font-size:.6rem">${RL[u.role]}</span></td>
+        <td style="padding:10px 4px;text-align:right">
+          ${u.id!==this.user.id?`
+            <select onchange="A.chRole('${u.id}',this.value)" class="inp" style="width:auto;padding:4px 26px 4px 8px;font-size:.72rem;display:inline-block;margin-right:4px">
+              <option value="staff" ${u.role==='staff'?'selected':''}>Staff</option>
+              <option value="leader" ${u.role==='leader'?'selected':''}>Leader</option>
+              ${this.user.role==='admin'?`<option value="admin" ${u.role==='admin'?'selected':''}>Admin</option>`:''}
+            </select>
+            <button onclick="A.delUser('${u.id}','${this.esc(u.name)}')" class="btn br bs" style="padding:4px 8px"><i class="fas fa-trash"></i></button>
+          `:'<span style="font-size:.72rem;color:var(--muted)">—</span>'}
+        </td>
+      </tr>`).join('')}</tbody>
+    </table>`;
+  },
+
+  async addUser(){
+    const email=document.getElementById('newUEmail').value.trim().toLowerCase();
+    const name=document.getElementById('newUName').value.trim();
+    const role=document.getElementById('newURole').value;
+    if(!email||!email.includes('@')){this.shake(document.getElementById('newUEmail'));return}
+    if(!name){this.shake(document.getElementById('newUName'));return}
+    const uid=this.emailToId(email);
+    // Cek duplikat
+    if(this.users.find(u=>u.id===uid)){this.toast('Duplikat','Gmail ini sudah terdaftar.','','error');return}
+    try{
+      const usedCols=this.users.map(u=>u.color);
+      const availCol=UCOLS.find(c=>!usedCols.includes(c))||UCOLS[Math.floor(Math.random()*UCOLS.length)];
+      await db.collection('users').doc(uid).set({email,name,role,color:availCol,registeredBy:this.user.id,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+      document.getElementById('newUEmail').value='';document.getElementById('newUName').value='';
+      this.toast('Berhasil',`${name} (${email}) berhasil didaftarkan sebagai ${RL[role]}.`,'','info');
+    }catch(e){this.toast('Error','Gagal mendaftarkan: '+e.message,'','error')}
+  },
+
+  async chRole(uid,newRole){
+    if(this.user.role==='staff')return;
+    if(this.user.role==='leader'&&newRole==='admin')return;
+    try{
+      await db.collection('users').doc(uid).update({role:newRole});
+      const u=this.users.find(x=>x.id===uid);
+      this.toast('Peran Diubah',`${u?.name||'Pengguna'} sekarang menjadi ${RL[newRole]}`,'','info');
+    }catch(e){this.toast('Error',e.message,'','error')}
+  },
+
+  async delUser(uid,name){
+    if(uid===this.user.id)return;
+    if(!confirm(`Hapus pengguna "${name}"?`))return;
+    try{
+      await db.collection('users').doc(uid).delete();
+      this.toast('Dihapus',`Pengguna "${name}" telah dihapus.`,'','info');
+    }catch(e){this.toast('Error',e.message,'','error')}
+  },
+
+  // === REMINDER ===
+  startReminderChecker(){setInterval(()=>this.checkReminders(),15000)},
+
+  checkReminders(){
+    const now=new Date();
+    const ds=now.toISOString().split('T')[0];
+    const ts=now.toTimeString().substring(0,5);
+    this.notes.forEach(n=>{
+      if(!n.reminderDate||!n.reminderTime||n.status==='selesai')return;
+      if(n.reminderDate===ds&&n.reminderTime===ts){
+        const key=n.id+'_'+ds+'_'+ts;
+        if(this.reminderKeys.has(key))return;
+        this.reminderKeys.add(key);
+        this.showRemPopup(n);
+      }
     });
+  },
 
-    confirmLogout.addEventListener('click', () => {
-        logoutConfirm.classList.remove('active');
-        auth.signOut();
-    });
+  showRemPopup(note){
+    playAlarm();
+    const p=document.getElementById('remPopup');p.style.display='block';
+    p.innerHTML=`<div class="ro" onclick="if(event.target===this)A.closeRem()">
+      <div class="rb glass ga" style="padding:28px;text-align:center;border:1px solid rgba(255,170,0,.3)">
+        <div style="font-size:2.5rem;margin-bottom:12px"><i class="fas fa-bell" style="color:var(--amber);animation:pb 1s infinite"></i></div>
+        <h3 class="fd" style="font-size:.95rem;color:var(--amber);margin-bottom:8px">REMINDER</h3>
+        <h2 style="font-size:1.1rem;font-weight:700;margin-bottom:8px">${this.esc(note.title)}</h2>
+        <p style="font-size:.85rem;color:var(--text2);margin-bottom:20px;line-height:1.5">${this.esc(note.content).substring(0,150)}${note.content.length>150?'...':''}</p>
+        <div style="display:flex;gap:10px;justify-content:center">
+          <button class="btn bgh" onclick="A.closeRem()">Tutup</button>
+          <button class="btn bp" onclick="A.closeRem();A.openDetail('${note.id}')">Lihat Catatan</button>
+        </div>
+      </div>
+    </div>`;
+  },
 
-    // ================================================================
-    //  LOAD CHAT LIST
-    // ================================================================
-    function loadChatList() {
-        const chatsRef = database.ref('chats');
-        chatsRef.once('value')
-            .then(snapshot => {
-                const data = snapshot.val();
-                if (data) {
-                    chatList = Object.values(data);
-                } else {
-                    chatList = defaultChats;
-                    const updates = {};
-                    defaultChats.forEach(chat => {
-                        updates[chat.id] = chat;
-                    });
-                    chatsRef.update(updates);
-                }
-                renderChatList();
-            })
-            .catch(() => {
-                chatList = defaultChats;
-                renderChatList();
-            });
-    }
+  closeRem(){document.getElementById('remPopup').style.display='none';document.getElementById('remPopup').innerHTML=''},
 
-    function renderChatList(filter = '') {
-        const filtered = chatList.filter(chat => 
-            chat.name.toLowerCase().includes(filter.toLowerCase())
-        );
-        
-        if (filtered.length === 0) {
-            chatListEl.innerHTML = `<div style="color:#444;padding:20px;text-align:center;">Tidak ada chat</div>`;
-            return;
-        }
+  // === LAMPIRAN ===
+  handleAtt(e){
+    const f=e.target.files[0];if(!f)return;
+    if(f.size>2*1024*1024){this.toast('Error','Ukuran file maksimal 2MB','','error');e.target.value='';return}
+    const r=new FileReader();
+    r.onload=ev=>{this.attachData=ev.target.result;document.getElementById('attImg').src=this.attachData;document.getElementById('attPrev').style.display='block'};
+    r.readAsDataURL(f);
+  },
+  removeAtt(){this.attachData=null;document.getElementById('attPrev').style.display='none';document.getElementById('nAttach').value=''},
 
-        let html = '';
-        filtered.forEach(chat => {
-            const isActive = chat.id === currentChatId;
-            const initials = chat.name.split(' ').map(w => w[0]).join('').substring(0, 2);
-            const lastMsg = getLastMessage(chat.id);
-            html += `
-                <div class="chat-item ${isActive ? 'active' : ''}" data-id="${chat.id}">
-                    <div class="chat-avatar" style="background: ${getColor(chat.id)}">${initials}</div>
-                    <div class="chat-info">
-                        <div class="chat-name">${chat.name}</div>
-                        <div class="chat-preview">${lastMsg || chat.members + ' anggota'}</div>
-                    </div>
-                    <div class="chat-meta">
-                        <div class="time">${getLastMessageTime(chat.id)}</div>
-                    </div>
-                </div>
-            `;
-        });
-        chatListEl.innerHTML = html;
+  // === TOAST ===
+  toast(title,msg,cat='',type='info'){
+    const c=document.getElementById('toastC');const t=document.createElement('div');
+    const bc=type==='error'?'var(--red)':type==='warning'?'var(--amber)':'var(--cyan)';
+    t.className='toast glass';t.style.cssText=`border-left-color:${bc};padding:14px 16px`;
+    t.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">
+      <div style="flex:1">
+        <div style="font-size:.82rem;font-weight:700;margin-bottom:2px;color:${type==='error'?'var(--red)':type==='warning'?'var(--amber)':'var(--text)'}">${this.esc(title)}</div>
+        <div style="font-size:.78rem;color:var(--text2);line-height:1.4">${this.esc(msg)}</div>
+        ${cat?`<span style="display:inline-block;margin-top:6px;font-size:.65rem;padding:2px 8px;border-radius:10px;background:${CC[cat]||'#94a3b8'}15;color:${CC[cat]||'#94a3b8'};border:1px solid ${CC[cat]||'#94a3b8'}30;font-weight:600">${cat}</span>`:''}
+      </div>
+      <button onclick="this.closest('.toast').classList.add('out');setTimeout(()=>this.closest('.toast').remove(),300)" style="background:none;border:none;color:var(--muted);cursor:pointer;padding:2px;font-size:.8rem"><i class="fas fa-times"></i></button>
+    </div>`;
+    c.appendChild(t);setTimeout(()=>{if(t.parentNode){t.classList.add('out');setTimeout(()=>t.remove(),300)}},5000);
+  },
 
-        document.querySelectorAll('.chat-item').forEach(item => {
-            item.addEventListener('click', function() {
-                const id = this.dataset.id;
-                const chat = chatList.find(c => c.id === id);
-                if (chat) {
-                    currentChatId = id;
-                    renderChatList(searchChat.value);
-                    updateChatHeader(chat);
-                    renderMessages();
-                }
-            });
-        });
-    }
+  // === UTILITAS ===
+  esc(s){if(!s)return'';const d=document.createElement('div');d.textContent=s;return d.innerHTML},
+  timeAgo(ts){
+    const d=ts?.toDate?ts.toDate():new Date(ts);const diff=Date.now()-d.getTime();const m=Math.floor(diff/60000);
+    if(m<1)return'Baru saja';if(m<60)return m+' menit lalu';
+    const h=Math.floor(m/60);if(h<24)return h+' jam lalu';
+    const dd=Math.floor(h/24);if(dd<7)return dd+' hari lalu';return this.fmtDT(d);
+  },
+  fmtDT(d){return d.toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'})+' '+d.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'})},
+  shake(el){el.style.animation='none';el.offsetHeight;el.style.animation='sh .4s';el.style.borderColor='var(--red)';setTimeout(()=>el.style.borderColor='',1500)}
+};
 
-    function getColor(id) {
-        const colors = ['#4285f4', '#ea4335', '#fbbc05', '#34a853', '#9c27b0', '#00acc1', '#ff6d00'];
-        let hash = 0;
-        for (let i = 0; i < id.length; i++) {
-            hash = id.charCodeAt(i) + ((hash << 5) - hash);
-        }
-        return colors[Math.abs(hash) % colors.length];
-    }
+// === FUNGSI GLOBAL MODAL ===
+function closeNM(){const m=document.getElementById('noteModal');m.classList.add('cl');setTimeout(()=>{m.style.display='none';m.classList.remove('cl')},200)}
+function closeDM(){const m=document.getElementById('detailModal');m.classList.add('cl');setTimeout(()=>{m.style.display='none';m.classList.remove('cl')},200)}
+function closeUM(){const m=document.getElementById('userModal');m.classList.add('cl');setTimeout(()=>{m.style.display='none';m.classList.remove('cl')},200)}
 
-    function getLastMessage(chatId) {
-        const chatMessages = allMessages.filter(msg => msg.chatId === chatId);
-        if (chatMessages.length > 0) {
-            const last = chatMessages[chatMessages.length - 1];
-            return last.text.length > 30 ? last.text.substring(0, 30) + '...' : last.text;
-        }
-        return null;
-    }
-
-    function getLastMessageTime(chatId) {
-        const chatMessages = allMessages.filter(msg => msg.chatId === chatId);
-        if (chatMessages.length > 0) {
-            const last = chatMessages[chatMessages.length - 1];
-            const date = new Date(last.timestamp);
-            return date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-        }
-        return '--:--';
-    }
-
-    function updateChatHeader(chat) {
-        const initials = chat.name.split(' ').map(w => w[0]).join('').substring(0, 2);
-        chatAvatar.textContent = initials;
-        chatAvatar.style.background = getColor(chat.id);
-        chatName.textContent = chat.name;
-        chatMembers.textContent = `${chat.members} anggota`;
-    }
-
-    searchChat.addEventListener('input', function() {
-        renderChatList(this.value);
-    });
-
-    // ================================================================
-    //  LOAD MESSAGES
-    // ================================================================
-    function loadMessages() {
-        messagesRef.orderByChild('timestamp').on('value', snapshot => {
-            const data = snapshot.val();
-            allMessages = [];
-            if (data) {
-                Object.keys(data).forEach(key => {
-                    const msg = data[key];
-                    allMessages.push({
-                        key: key,
-                        text: msg.text || '',
-                        sender: msg.sender || 'Unknown',
-                        senderEmail: msg.senderEmail || '',
-                        chatId: msg.chatId || 'oprasional',
-                        timestamp: msg.timestamp || Date.now(),
-                    });
-                });
-                allMessages.sort((a, b) => a.timestamp - b.timestamp);
-            }
-            renderMessages();
-            renderChatList(searchChat.value);
-        });
-    }
-
-    // ================================================================
-    //  RENDER MESSAGES
-    // ================================================================
-    function renderMessages() {
-        const chatMessages = allMessages.filter(msg => msg.chatId === currentChatId);
-        
-        if (chatMessages.length === 0) {
-            messagesArea.innerHTML = `<div class="empty-messages">Belum ada pesan di chat ini</div>`;
-            return;
-        }
-
-        const currentUserEmail = currentUser ? currentUser.email : '';
-        const isAdminUser = (currentUserEmail.toLowerCase() === ADMIN_EMAIL.toLowerCase());
-
-        let html = '';
-        chatMessages.forEach(msg => {
-            const isOwn = msg.senderEmail === currentUserEmail;
-            const senderName = msg.sender || msg.senderEmail || 'Unknown';
-            const time = new Date(msg.timestamp).toLocaleTimeString('id-ID', {
-                hour: '2-digit',
-                minute: '2-digit'
-            });
-            const showDelete = isAdminUser && msg.key;
-
-            html += `
-                <div class="message-wrapper ${isOwn ? 'own' : 'other'}">
-                    ${!isOwn ? `<div class="message-sender">${senderName}</div>` : ''}
-                    <div class="message-bubble">${escapeHtml(msg.text)}</div>
-                    <div style="display:flex;align-items:center;gap:6px;">
-                        <div class="message-time">${time}</div>
-                        ${showDelete ? `<button class="delete-btn" data-key="${msg.key}">✕ Hapus</button>` : ''}
-                    </div>
-                </div>
-            `;
-        });
-
-        messagesArea.innerHTML = html;
-
-        if (isAdminUser) {
-            document.querySelectorAll('.delete-btn').forEach(btn => {
-                btn.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    const key = this.dataset.key;
-                    if (key && confirm('⚠️ Hapus pesan ini? (Tidak dapat dikembalikan)')) {
-                        messagesRef.child(key).remove();
-                    }
-                });
-            });
-        }
-
-        messagesArea.scrollTop = messagesArea.scrollHeight;
-    }
-
-    // ================================================================
-    //  SEND MESSAGE
-    // ================================================================
-    function sendMessage() {
-        if (!currentUser) {
-            alert('Silakan login terlebih dahulu.');
-            return;
-        }
-        const text = messageInput.value.trim();
-        if (!text) return;
-
-        const newMessage = {
-            text: text,
-            sender: currentUser.displayName || currentUser.email || 'User',
-            senderEmail: currentUser.email || '',
-            chatId: currentChatId,
-            timestamp: Date.now(),
-        };
-
-        messagesRef.push(newMessage)
-            .then(() => {
-                messageInput.value = '';
-                messageInput.focus();
-            })
-            .catch(err => {
-                alert('Gagal kirim: ' + err.message);
-            });
-    }
-
-    sendBtn.addEventListener('click', sendMessage);
-    messageInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            sendMessage();
-        }
-    });
-
-    // ================================================================
-    //  CREATE GROUP
-    // ================================================================
-    createGroupBtn.addEventListener('click', () => {
-        const groupName = prompt('Masukkan nama grup baru:');
-        if (groupName && groupName.trim()) {
-            const newGroup = {
-                id: groupName.toLowerCase().replace(/[^a-z0-9]/g, '_'),
-                name: groupName.trim(),
-                members: 1
-            };
-            
-            if (chatList.find(c => c.id === newGroup.id)) {
-                alert('Grup dengan nama tersebut sudah ada!');
-                return;
-            }
-            
-            const chatsRef = database.ref('chats');
-            const updates = {};
-            updates[newGroup.id] = newGroup;
-            chatsRef.update(updates)
-                .then(() => {
-                    chatList.push(newGroup);
-                    renderChatList(searchChat.value);
-                    alert('Grup berhasil dibuat!');
-                })
-                .catch(err => {
-                    alert('Gagal membuat grup: ' + err.message);
-                });
-        }
-    });
-
-    // ================================================================
-    //  UTILITY
-    // ================================================================
-    function escapeHtml(text) {
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
-    }
-
-    // ================================================================
-    //  INIT
-    // ================================================================
-    const defaultChat = defaultChats.find(c => c.id === 'oprasional');
-    if (defaultChat) {
-        updateChatHeader(defaultChat);
-    }
-
-    console.log('💬 Hokben Chat Dashboard');
-    console.log('👑 Admin:', haris789smb@gmail.com);
-    console.log('🔒 Login dengan Gmail untuk mulai chatting');
-    console.log('📁 Firebase Project:', firebaseConfig.projectId);
+// === MULAI ===
+A.init();
 </script>
-
 </body>
 </html>
-<script>
-document.addEventListener('contextmenu', e => e.preventDefault());
-
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'F12') e.preventDefault();
-    if (e.ctrlKey && e.shiftKey && ['I','J','C'].includes(e.key.toUpperCase())) e.preventDefault();
-    if (e.ctrlKey && e.key.toUpperCase() === 'U') e.preventDefault();
-});
-
-setInterval(() => {
-    const before = new Date();
-    debugger;
-    const after = new Date();
-    if (after - before > 100) {
-        document.body.innerHTML = '<h1 style="text-align:center;margin-top:50px;">Akses ditolak</h1>';
-    }
-}, 1000);
-</script>
